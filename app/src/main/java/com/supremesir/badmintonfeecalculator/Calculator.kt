@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 fun CalculatorScreen() {
     var courtFee by remember { mutableStateOf("") }
     var badmintonFee by remember { mutableStateOf("") }
-    var extraMaleFee by remember { mutableStateOf("") }
+    var extraMaleFee by remember { mutableStateOf("5") }
     var maleCount by remember { mutableStateOf("") }
     var femaleCount by remember { mutableStateOf("") }
     var maleCost by remember { mutableDoubleStateOf(0.0) }
