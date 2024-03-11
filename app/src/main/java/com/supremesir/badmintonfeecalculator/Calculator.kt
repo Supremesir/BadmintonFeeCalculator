@@ -9,18 +9,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.FloatingActionButtonDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
@@ -67,21 +59,25 @@ fun CalculatorScreen() {
         },
         floatingActionButton = {
             ExtendedFloatingActionButton(
-                onClick = { calculateString(
-                    courtFee,
-                    badmintonFee,
-                    extraMaleFee,
-                    maleCount,
-                    femaleCount
-                ).run {
-                    maleCost = this.maleFee
-                    femaleCost = this.femaleFee
-                } },
-                icon = { Icon(
-                    painter = painterResource(R.drawable.calculation),
-                    contentDescription = resources.getString(R.string.calculate),
-                    modifier = Modifier.size(40.dp)
-                ) },
+                onClick = {
+                    calculateString(
+                        courtFee,
+                        badmintonFee,
+                        extraMaleFee,
+                        maleCount,
+                        femaleCount
+                    ).run {
+                        maleCost = this.maleFee
+                        femaleCost = this.femaleFee
+                    }
+                },
+                icon = {
+                    Icon(
+                        painter = painterResource(R.drawable.calculation),
+                        contentDescription = resources.getString(R.string.calculate),
+                        modifier = Modifier.size(40.dp)
+                    )
+                },
                 text = { Text(text = resources.getString(R.string.calculate)) },
             )
         }
