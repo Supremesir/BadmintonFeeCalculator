@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">BadmintonFeeCalculator</string>
+    <string name="court_fee_label">Court Fee:</string>
+    <string name="shuttlecock_fee_label">Shuttlecock Fee:</string>
+    <string name="extra_fee_label">Male Extra Fee:</string>
+    <string name="male_count_label">Man Count:</string>
+    <string name="female_count_label">Female Count:</string>
+    <string name="male_fee_label">Male Fee:</string>
+    <string name="female_fee_label">Female Fee:</string>
+    <string name="calculate">Calculate</string>
 </resources>

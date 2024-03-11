@@ -17,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -29,6 +30,8 @@ fun CalculatorScreen() {
     var maleCost by remember { mutableDoubleStateOf(0.0) }
     var femaleCost by remember { mutableDoubleStateOf(0.0) }
 
+    val resources = LocalContext.current.resources
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -39,31 +42,31 @@ fun CalculatorScreen() {
         OutlinedTextField(
             value = courtFee,
             onValueChange = { courtFee = it },
-            label = { Text("请输入场地费") },
+            label = { Text(resources.getString(R.string.court_fee_label)) },
         )
         Spacer(modifier = Modifier.height(16.dp))
         OutlinedTextField(
             value = badmintonFee,
             onValueChange = { badmintonFee = it },
-            label = { Text("请输入羽毛球费" ) },
+            label = { Text(resources.getString(R.string.shuttlecock_fee_label) ) },
         )
         Spacer(modifier = Modifier.height(16.dp))
         OutlinedTextField(
             value = extraMaleFee,
             onValueChange = { extraMaleFee = it },
-            label = { Text("请输入男生比女生多的费用") },
+            label = { Text(resources.getString(R.string.extra_fee_label)) },
         )
         Spacer(modifier = Modifier.height(16.dp))
         OutlinedTextField(
             value = maleCount,
             onValueChange = { maleCount = it },
-            label = { Text("请输入男生人数" )},
+            label = { Text(resources.getString(R.string.male_count_label))},
         )
         Spacer(modifier = Modifier.height(16.dp))
         OutlinedTextField(
             value = femaleCount,
             onValueChange = { femaleCount = it },
-            label = { Text("请输入女生人数") },
+            label = { Text(resources.getString(R.string.female_count_label)) },
         )
         Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = {
@@ -72,12 +75,12 @@ fun CalculatorScreen() {
                 femaleCost = this.femaleFee
             }
         }) {
-            Text("计算")
+            Text(resources.getString(R.string.calculate))
         }
         Spacer(modifier = Modifier.height(16.dp))
-        Text("男生费用: $maleCost")
+        Text("${resources.getString(R.string.male_fee_label)}$maleCost")
         Spacer(modifier = Modifier.height(8.dp))
-        Text("女生费用: $femaleCost")
+        Text("${resources.getString(R.string.female_fee_label)}$femaleCost")
     }
 }
 

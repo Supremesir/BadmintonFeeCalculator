@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">球费计算器</string>
+    <string name="court_fee_label">场地费：</string>
+    <string name="shuttlecock_fee_label">羽毛球费：</string>
+    <string name="extra_fee_label">男生多于女生费用：</string>
+    <string name="male_count_label">男生人数：</string>
+    <string name="female_count_label">女生人数：</string>
+    <string name="male_fee_label">男生费用：</string>
+    <string name="female_fee_label">女生费用：</string>
+    <string name="calculate">计算</string>
+</resources>
