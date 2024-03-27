@@ -45,7 +45,8 @@ fun CalculatorScreen() {
     var maleCost by remember { mutableDoubleStateOf(0.0) }
     var femaleCost by remember { mutableDoubleStateOf(0.0) }
 
-    val resources = LocalContext.current.resources
+    val context = LocalContext.current
+    val resources = context.resources
 
     Scaffold(
         topBar = {
@@ -57,6 +58,7 @@ fun CalculatorScreen() {
                 title = { Text(resources.getString(R.string.app_name)) }
             )
         },
+        // 计算按钮
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = {
@@ -89,6 +91,7 @@ fun CalculatorScreen() {
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // 内容输入区
             Spacer(modifier = Modifier.height(12.dp))
             OutlinedTextField(
                 value = courtFee,
@@ -120,10 +123,13 @@ fun CalculatorScreen() {
                 label = { Text(resources.getString(R.string.female_count_label)) },
             )
             Spacer(modifier = Modifier.height(12.dp))
+
+            // 结果展示区
             ElevatedCard(
                 elevation = CardDefaults.cardElevation(
                     defaultElevation = 6.dp
                 ),
+                onClick = { copyOnClick(context, maleCost.toString())},
                 modifier = Modifier.padding(16.dp),
             ) {
                 Row(
@@ -146,6 +152,7 @@ fun CalculatorScreen() {
                 elevation = CardDefaults.cardElevation(
                     defaultElevation = 6.dp
                 ),
+                onClick = { copyOnClick(context, femaleCost.toString())},
                 modifier = Modifier.padding(16.dp),
             ) {
                 Row(
