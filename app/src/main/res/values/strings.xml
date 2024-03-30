@@ -8,4 +8,6 @@
     <string name="male_fee_label">Male Fee:</string>
     <string name="female_fee_label">Female Fee:</string>
     <string name="calculate">Calculate</string>
+    <string name="other_fee_label">Other Fee</string>
+    <string name="common_num_fee_label">%1$s Man %2$s Woman</string>
 </resources>

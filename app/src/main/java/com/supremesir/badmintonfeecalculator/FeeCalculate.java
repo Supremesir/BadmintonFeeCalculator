@@ -29,4 +29,18 @@ public final class FeeCalculate {
 
         return new double[]{maleFeeLast, femaleFeeLast};
     }
+
+    /**
+     * 计算常用人数组的需收费金额
+     * @return
+     */
+    public static double calculateOther(
+            int maleCount,
+            int femaleCount,
+            double maleFee,
+            double femaleFee
+    ) {
+        double fee = maleFee * maleCount + femaleFee * femaleCount;
+        return Math.round(fee * 10) / 10.0;
+    }
 }

@@ -1,14 +1,25 @@
 package com.supremesir.badmintonfeecalculator
 
+import android.view.Surface
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -18,10 +29,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -31,8 +44,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.holix.android.bottomsheetdialog.compose.BottomSheetDialog
+import com.holix.android.bottomsheetdialog.compose.BottomSheetDialogProperties
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -44,6 +60,7 @@ fun CalculatorScreen() {
     var femaleCount by remember { mutableStateOf("") }
     var maleCost by remember { mutableDoubleStateOf(0.0) }
     var femaleCost by remember { mutableDoubleStateOf(0.0) }
+    var showDialog = remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     val resources = context.resources
@@ -130,11 +147,11 @@ fun CalculatorScreen() {
                     defaultElevation = 6.dp
                 ),
                 onClick = { copyOnClick(context, maleCost.toString())},
-                modifier = Modifier.padding(16.dp),
+                modifier = Modifier.padding(12.dp),
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.padding(12.dp)
                 ) {
                     Text(resources.getString(R.string.male_fee_label))
                     OutlinedCard(
@@ -153,11 +170,11 @@ fun CalculatorScreen() {
                     defaultElevation = 6.dp
                 ),
                 onClick = { copyOnClick(context, femaleCost.toString())},
-                modifier = Modifier.padding(16.dp),
+                modifier = Modifier.padding(12.dp),
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.padding(12.dp)
                 ) {
                     Text(resources.getString(R.string.female_fee_label))
                     OutlinedCard(
@@ -170,6 +187,60 @@ fun CalculatorScreen() {
                         )
                     }
 
+                }
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+            Button(onClick = { showDialog.value = true }) {
+                Text(resources.getString(R.string.other_fee_label))
+                ShowBottomSheetDialog(showDialog, maleCost, femaleCost)
+            }
+        }
+    }
+}
+
+@Composable
+fun ShowBottomSheetDialog(
+    show: MutableState<Boolean>,
+    maleFee: Double,
+    femaleFee: Double
+) {
+    val context = LocalContext.current
+    if (show.value) {
+        BottomSheetDialog(
+            onDismissRequest = {
+                show.value = false
+            },
+            properties = BottomSheetDialogProperties()
+        ) {
+            Surface(
+                shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+                color = MaterialTheme.colorScheme.background
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    repeat(9) {
+                        val pair = getNumCombination(it)
+                        val fee = calculateFeeCombination(pair, maleFee, femaleFee)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 8.dp, end = 8.dp, top = 10.dp, bottom = 10.dp)
+                                .clickable { copyOnClick(context, fee.toString()) },
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = stringResource(R.string.common_num_fee_label, pair.first, pair.second),
+                                modifier = Modifier
+                                    .weight(1F)
+                                    .padding(start = 16.dp),
+                                fontSize = 16.sp
+                            )
+                            Text(
+                                text = "$fee",
+                                modifier = Modifier.padding(start = 0.dp, end = 16.dp),
+                                fontSize = 21.sp
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -193,4 +264,26 @@ fun calculateString(
     ).run {
         return FeeResult(this[0], this[1])
     }
+}
+
+fun getNumCombination(index: Int): Pair<Int, Int> {
+    return listOf(
+        Pair(1, 1),
+        Pair(1, 2),
+        Pair(1, 3),
+        Pair(2, 1),
+        Pair(2, 2),
+        Pair(2, 3),
+        Pair(3, 1),
+        Pair(3, 2),
+        Pair(3, 3)
+    )[index]
+}
+
+fun calculateFeeCombination(
+    numPair: Pair<Int, Int>,
+    maleFee: Double,
+    femaleFee: Double
+): Double {
+    return FeeCalculate.calculateOther(numPair.first, numPair.second, maleFee, femaleFee)
 }
