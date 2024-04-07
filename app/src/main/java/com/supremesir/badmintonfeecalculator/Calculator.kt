@@ -268,15 +268,15 @@ fun calculateString(
 
 fun getNumCombination(index: Int): Pair<Int, Int> {
     return listOf(
+        Pair(0, 2),
         Pair(1, 1),
         Pair(1, 2),
-        Pair(1, 3),
+        Pair(2, 0),
         Pair(2, 1),
         Pair(2, 2),
-        Pair(2, 3),
+        Pair(3, 0),
         Pair(3, 1),
         Pair(3, 2),
-        Pair(3, 3)
     )[index]
 }
 
