@@ -34,9 +34,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -45,10 +47,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.chargemap.compose.numberpicker.NumberPicker
 import com.holix.android.bottomsheetdialog.compose.BottomSheetDialog
 import com.holix.android.bottomsheetdialog.compose.BottomSheetDialogProperties
+import com.supremesir.badmintonfeecalculator.picker.InfiniteNumberPicker
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -60,7 +66,7 @@ fun CalculatorScreen() {
     var femaleCount by remember { mutableStateOf("") }
     var maleCost by remember { mutableDoubleStateOf(0.0) }
     var femaleCost by remember { mutableDoubleStateOf(0.0) }
-    var showDialog = remember { mutableStateOf(false) }
+    val showDialog = remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     val resources = context.resources
@@ -204,6 +210,9 @@ fun ShowBottomSheetDialog(
     maleFee: Double,
     femaleFee: Double
 ) {
+    var malePicker by remember { mutableIntStateOf(3) }
+    var femalePicker by remember { mutableIntStateOf(0) }
+    var customFee by remember { mutableDoubleStateOf(0.0) }
     val context = LocalContext.current
     if (show.value) {
         BottomSheetDialog(
@@ -217,7 +226,8 @@ fun ShowBottomSheetDialog(
                 color = MaterialTheme.colorScheme.background
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    repeat(9) {
+
+                    repeat(6) {
                         val pair = getNumCombination(it)
                         val fee = calculateFeeCombination(pair, maleFee, femaleFee)
                         Row(
@@ -240,6 +250,72 @@ fun ShowBottomSheetDialog(
                                 fontSize = 21.sp
                             )
                         }
+                    }
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 8.dp, end = 8.dp)
+                            .clickable { copyOnClick(context, customFee.toString()) },
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // 自动计算自定义男女时的费用
+                        LaunchedEffect(malePicker, femalePicker) {
+                            delay(100) // 等待其他状态变量的变化稳定下来
+                            customFee = calculateFeeCombination(
+                                Pair(malePicker, femalePicker),
+                                maleFee,
+                                femaleFee
+                            )
+                        }
+
+                        Row(
+                            modifier = Modifier.weight(1F)
+                        ) {
+                            NumberPicker(
+                                dividersColor = MaterialTheme.colorScheme.primary,
+                                value = malePicker,
+                                range = 0..10,
+                                onValueChange = {
+                                    malePicker = it
+                                },
+                                textStyle = TextStyle(
+                                    fontSize = 16.sp,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            )
+                            Text(
+                                text = stringResource(id = R.string.man),
+                                modifier = Modifier
+                                    .align(Alignment.CenterVertically)
+                                    .padding(start = 4.dp, end = 4.dp),
+                                fontSize = 16.sp
+                            )
+                            NumberPicker(
+                                dividersColor = MaterialTheme.colorScheme.primary,
+                                value = femalePicker,
+                                range = 0..10,
+                                onValueChange = {
+                                    femalePicker = it
+                                },
+                                textStyle = TextStyle(
+                                    fontSize = 16.sp,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            )
+                            Text(
+                                text = stringResource(id = R.string.woman),
+                                modifier = Modifier
+                                    .align(Alignment.CenterVertically)
+                                    .padding(start = 4.dp, end = 4.dp),
+                                fontSize = 16.sp
+                            )
+                        }
+                        Text(
+                            text = "$customFee",
+                            modifier = Modifier.padding(start = 0.dp, end = 16.dp),
+                            fontSize = 21.sp
+                        )
                     }
                 }
             }

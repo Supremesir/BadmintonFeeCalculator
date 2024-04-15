@@ -8,6 +8,8 @@
     <string name="male_fee_label">男生费用：</string>
     <string name="female_fee_label">女生费用：</string>
     <string name="calculate">计算</string>
-    <string name="other_fee_label">其他金额</string>
+    <string name="other_fee_label">组合金额</string>
     <string name="common_num_fee_label">%1$s 男 %2$s 女</string>
+    <string name="man">男</string>
+    <string name="woman">女</string>
 </resources>

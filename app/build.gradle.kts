@@ -11,8 +11,8 @@ android {
         applicationId = "com.supremesir.badmintonfeecalculator"
         minSdk = 28
         targetSdk = 34
-        versionCode = 4
-        versionName = "1.2.1"
+        versionCode = 5
+        versionName = "1.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -52,6 +52,7 @@ android {
 
 dependencies {
 
+    implementation(libs.number.picker)
     implementation(libs.bottomsheet.dialog)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
