@@ -33,6 +33,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -50,6 +51,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.window.core.layout.WindowHeightSizeClass
+import androidx.window.core.layout.WindowSizeClass
+import androidx.window.core.layout.WindowWidthSizeClass
 import com.chargemap.compose.numberpicker.NumberPicker
 import com.holix.android.bottomsheetdialog.compose.BottomSheetDialog
 import com.holix.android.bottomsheetdialog.compose.BottomSheetDialogProperties
@@ -58,7 +62,9 @@ import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CalculatorScreen() {
+fun CalculatorScreen(
+    windowSizeClass: WindowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+) {
     var courtFee by remember { mutableStateOf("") }
     var badmintonFee by remember { mutableStateOf("") }
     var extraMaleFee by remember { mutableStateOf("5") }
@@ -70,6 +76,10 @@ fun CalculatorScreen() {
 
     val context = LocalContext.current
     val resources = context.resources
+
+    // TODO: 使用WindowSizeClass调整界面 
+    val showTopAppBar = windowSizeClass.windowHeightSizeClass != WindowHeightSizeClass.COMPACT
+    val showStartAppBar = windowSizeClass.windowWidthSizeClass != WindowWidthSizeClass.COMPACT
 
     Scaffold(
         topBar = {
