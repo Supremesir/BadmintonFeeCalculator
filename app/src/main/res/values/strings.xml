@@ -5,8 +5,10 @@
     <string name="extra_fee_label">Male Extra Fee:</string>
     <string name="male_count_label">Man Count:</string>
     <string name="female_count_label">Female Count:</string>
+    <string name="absent_count_label">Absent Count:</string>
     <string name="male_fee_label">Male Fee:</string>
     <string name="female_fee_label">Female Fee:</string>
+    <string name="absent_fee_label">Absent Fee:</string>
     <string name="calculate">Calculate</string>
     <string name="other_fee_label">Combined Fee</string>
     <string name="common_num_fee_label">%1$s Man %2$s Woman</string>

@@ -1,24 +1,17 @@
 package com.supremesir.badmintonfeecalculator
 
-import android.view.Surface
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
@@ -57,7 +50,6 @@ import androidx.window.core.layout.WindowWidthSizeClass
 import com.chargemap.compose.numberpicker.NumberPicker
 import com.holix.android.bottomsheetdialog.compose.BottomSheetDialog
 import com.holix.android.bottomsheetdialog.compose.BottomSheetDialogProperties
-import com.supremesir.badmintonfeecalculator.picker.InfiniteNumberPicker
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -70,6 +62,7 @@ fun CalculatorScreen(
     var extraMaleFee by remember { mutableStateOf("5") }
     var maleCount by remember { mutableStateOf("") }
     var femaleCount by remember { mutableStateOf("") }
+    var absentCount by remember { mutableStateOf("") }
     var maleCost by remember { mutableDoubleStateOf(0.0) }
     var femaleCost by remember { mutableDoubleStateOf(0.0) }
     val showDialog = remember { mutableStateOf(false) }
@@ -156,13 +149,18 @@ fun CalculatorScreen(
                 label = { Text(resources.getString(R.string.female_count_label)) },
             )
             Spacer(modifier = Modifier.height(12.dp))
-
+            OutlinedTextField(
+                value = absentCount,
+                onValueChange = { absentCount = it },
+                label = { Text(resources.getString(R.string.absent_count_label)) },
+            )
+            Spacer(modifier = Modifier.height(12.dp))
             // 结果展示区
             ElevatedCard(
                 elevation = CardDefaults.cardElevation(
                     defaultElevation = 6.dp
                 ),
-                onClick = { copyOnClick(context, maleCost.toString())},
+                onClick = { copyOnClick(context, maleCost.toString()) },
                 modifier = Modifier.padding(12.dp),
             ) {
                 Row(
@@ -185,7 +183,7 @@ fun CalculatorScreen(
                 elevation = CardDefaults.cardElevation(
                     defaultElevation = 6.dp
                 ),
-                onClick = { copyOnClick(context, femaleCost.toString())},
+                onClick = { copyOnClick(context, femaleCost.toString()) },
                 modifier = Modifier.padding(12.dp),
             ) {
                 Row(
@@ -201,6 +199,33 @@ fun CalculatorScreen(
                             text = "$femaleCost",
                             fontSize = 24.sp
                         )
+                    }
+
+                }
+            }
+            if (absentCount.safeToInt() > 0){
+                ElevatedCard(
+                    elevation = CardDefaults.cardElevation(
+                        defaultElevation = 6.dp
+                    ),
+                    onClick = { copyOnClick(context, femaleCost.toString()) },
+                    modifier = Modifier.padding(12.dp),
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(12.dp)
+                    ) {
+                        Text(resources.getString(R.string.absent_fee_label))
+                        OutlinedCard(
+                            border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
+                        ) {
+                            Text(
+                                modifier = Modifier.padding(8.dp),
+                                text = "$femaleCost",
+                                fontSize = 24.sp
+                            )
+                        }
+
                     }
 
                 }
@@ -248,7 +273,11 @@ fun ShowBottomSheetDialog(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = stringResource(R.string.common_num_fee_label, pair.first, pair.second),
+                                text = stringResource(
+                                    R.string.common_num_fee_label,
+                                    pair.first,
+                                    pair.second
+                                ),
                                 modifier = Modifier
                                     .weight(1F)
                                     .padding(start = 16.dp),
@@ -349,6 +378,26 @@ fun calculateString(
         femaleCount.safeToInt()
     ).run {
         return FeeResult(this[0], this[1])
+    }
+}
+
+fun calculateStringWithAbsent(
+    courtFee: String,
+    badmintonFee: String,
+    extraMaleFee: String,
+    maleCount: String,
+    femaleCount: String,
+    absentCount: String
+): FeeResult {
+    FeeCalculate.calculateWithAbsent(
+        courtFee.safeToDouble(),
+        badmintonFee.safeToDouble(),
+        extraMaleFee.safeToDouble(),
+        maleCount.safeToInt(),
+        femaleCount.safeToInt(),
+        absentCount.safeToInt()
+    ).run {
+        return FeeResult(this[0], this[1], this[2])
     }
 }
 

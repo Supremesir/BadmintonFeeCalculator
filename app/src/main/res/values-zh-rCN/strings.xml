@@ -5,8 +5,10 @@
     <string name="extra_fee_label">男生多于女生费用：</string>
     <string name="male_count_label">男生人数：</string>
     <string name="female_count_label">女生人数：</string>
+    <string name="absent_count_label">鸽子人数:</string>
     <string name="male_fee_label">男生费用：</string>
     <string name="female_fee_label">女生费用：</string>
+    <string name="absent_fee_label">鸽子费用：</string>
     <string name="calculate">计算</string>
     <string name="other_fee_label">组合金额</string>
     <string name="common_num_fee_label">%1$s 男 %2$s 女</string>
