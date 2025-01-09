@@ -70,10 +70,6 @@ fun CalculatorScreen(
     val context = LocalContext.current
     val resources = context.resources
 
-    // TODO: 使用WindowSizeClass调整界面 
-    val showTopAppBar = windowSizeClass.windowHeightSizeClass != WindowHeightSizeClass.COMPACT
-    val showStartAppBar = windowSizeClass.windowWidthSizeClass != WindowWidthSizeClass.COMPACT
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -119,17 +115,27 @@ fun CalculatorScreen(
         ) {
             // 内容输入区
             Spacer(modifier = Modifier.height(12.dp))
-            OutlinedTextField(
-                value = courtFee,
-                onValueChange = { courtFee = it },
-                label = { Text(resources.getString(R.string.court_fee_label)) },
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            OutlinedTextField(
-                value = badmintonFee,
-                onValueChange = { badmintonFee = it },
-                label = { Text(resources.getString(R.string.shuttlecock_fee_label)) },
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                OutlinedTextField(
+                    value = courtFee,
+                    onValueChange = { courtFee = it },
+                    label = { Text(resources.getString(R.string.court_fee_label)) },
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 12.dp, end = 5.dp)
+                )
+                OutlinedTextField(
+                    value = badmintonFee,
+                    onValueChange = { badmintonFee = it },
+                    label = { Text(resources.getString(R.string.shuttlecock_fee_label)) },
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 5.dp, end = 12.dp)
+                )
+            }
             Spacer(modifier = Modifier.height(12.dp))
             OutlinedTextField(
                 value = extraMaleFee,
@@ -137,17 +143,28 @@ fun CalculatorScreen(
                 label = { Text(resources.getString(R.string.extra_fee_label)) },
             )
             Spacer(modifier = Modifier.height(12.dp))
-            OutlinedTextField(
-                value = maleCount,
-                onValueChange = { maleCount = it },
-                label = { Text(resources.getString(R.string.male_count_label)) },
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            OutlinedTextField(
-                value = femaleCount,
-                onValueChange = { femaleCount = it },
-                label = { Text(resources.getString(R.string.female_count_label)) },
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                OutlinedTextField(
+                    value = femaleCount,
+                    onValueChange = { femaleCount = it },
+                    label = { Text(resources.getString(R.string.female_count_label)) },
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 12.dp, end = 5.dp)
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                OutlinedTextField(
+                    value = maleCount,
+                    onValueChange = { maleCount = it },
+                    label = { Text(resources.getString(R.string.male_count_label)) },
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 5.dp, end = 12.dp)
+                )
+            }
             Spacer(modifier = Modifier.height(12.dp))
             OutlinedTextField(
                 value = absentCount,
