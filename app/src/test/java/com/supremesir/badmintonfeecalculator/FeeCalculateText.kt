@@ -7,18 +7,46 @@ import org.junit.Assert.*
 class FeeCalculateText {
     @Test
     fun testFeeCalculate() {
-        val courtFee = 270.0
-        val shuttlecockFee = 300.0
-        val man = 10
-        val woman = 6
-        val gugu = 0
-        val result = FeeCalculate.calculate(courtFee, shuttlecockFee, 5.0, man, woman, gugu)
-        val manResult = result[0]
-        val womanResult = result[1]
-        val guguResult = result[2]
-        println("男生费用:$manResult, 女生费用:$womanResult, 鸽子费用:$guguResult")
+        val courtFee = randomDouble()
+        val shuttlecockFee = randomDouble()
+        val man = randomInt(1)
+        val woman = randomInt(1)
+        val gugu = randomInt(0, 2)
+        println("场地费:$courtFee, 羽毛球费:$shuttlecockFee, 男生:$man, 女生:$woman, 鸽子:$gugu")
+        testFeeCalculateReal(courtFee, shuttlecockFee, man, woman, gugu)
+    }
+
+    fun randomDouble(): Double {
+        return (200..400).random() + Math.random()
+    }
+
+    fun randomInt(min: Int, max: Int = 10): Int {
+        return (min..max).random()
+    }
+
+
+
+    fun testFeeCalculateReal(
+        courtFee: Double,
+        shuttlecockFee: Double,
+        man: Int,
+        woman: Int,
+        gugu: Int
+    ) {
+        val resultGugu =
+            FeeCalculate.calculateWithAbsent(courtFee, shuttlecockFee, 5.0, man, woman, gugu)
+        val manResultGugu = resultGugu[0]
+        val womanResultGugu = resultGugu[1]
+        val guguResultGugu = resultGugu[2]
+        println("男生费用:$manResultGugu, 女生费用:$womanResultGugu, 鸽子费用:$guguResultGugu")
         val expectFee = courtFee + shuttlecockFee
-        val totalFee = manResult * man + womanResult * woman + guguResult * gugu
+        val totalFee = manResultGugu * man + womanResultGugu * woman + guguResultGugu * gugu
         println("没亏本:${totalFee >= expectFee}, 多收的钱:${totalFee - expectFee}")
+
+        val resultOld = FeeCalculate.calculate(courtFee, shuttlecockFee, 5.0, man, woman)
+        val manResult = resultOld[0]
+        val womanResult = resultOld[1]
+        println("男生费用:$manResultGugu, 女生费用:$womanResultGugu")
+        println("新旧费用相等:${manResult == manResultGugu && womanResult == womanResultGugu}")
     }
 }
