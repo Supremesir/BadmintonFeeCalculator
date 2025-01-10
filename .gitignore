@@ -106,3 +106,6 @@ google-services.json
 # Android Profiling
 *.hprof
 
+# Release profile
+/app/release/
+
