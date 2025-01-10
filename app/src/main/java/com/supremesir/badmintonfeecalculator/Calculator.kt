@@ -374,25 +374,27 @@ fun ShowBottomSheetDialog(
                                     .padding(start = 4.dp, end = 4.dp),
                                 fontSize = 16.sp
                             )
-                            NumberPicker(
-                                dividersColor = MaterialTheme.colorScheme.primary,
-                                value = absentPicker,
-                                range = 0..10,
-                                onValueChange = {
-                                    absentPicker = it
-                                },
-                                textStyle = TextStyle(
-                                    fontSize = 16.sp,
-                                    color = MaterialTheme.colorScheme.onSurface
+                            if (absentFee > 0) {
+                                NumberPicker(
+                                    dividersColor = MaterialTheme.colorScheme.primary,
+                                    value = absentPicker,
+                                    range = 0..10,
+                                    onValueChange = {
+                                        absentPicker = it
+                                    },
+                                    textStyle = TextStyle(
+                                        fontSize = 16.sp,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
                                 )
-                            )
-                            Text(
-                                text = stringResource(id = R.string.absent),
-                                modifier = Modifier
-                                    .align(Alignment.CenterVertically)
-                                    .padding(start = 4.dp, end = 4.dp),
-                                fontSize = 16.sp
-                            )
+                                Text(
+                                    text = stringResource(id = R.string.absent),
+                                    modifier = Modifier
+                                        .align(Alignment.CenterVertically)
+                                        .padding(start = 4.dp, end = 4.dp),
+                                    fontSize = 16.sp
+                                )
+                            }
                         }
                         Text(
                             text = "$customFee",
