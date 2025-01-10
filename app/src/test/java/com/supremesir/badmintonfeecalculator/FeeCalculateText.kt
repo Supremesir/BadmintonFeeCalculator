@@ -7,8 +7,8 @@ import org.junit.Assert.*
 class FeeCalculateText {
     @Test
     fun testFeeCalculate() {
-        val courtFee = randomDouble()
-        val shuttlecockFee = randomDouble()
+        val courtFee = randomInt(200, 400).toDouble()
+        val shuttlecockFee = randomInt(200, 400).toDouble()
         val man = randomInt(1)
         val woman = randomInt(1)
         val gugu = randomInt(0, 2)
@@ -16,8 +16,8 @@ class FeeCalculateText {
         testFeeCalculateReal(courtFee, shuttlecockFee, man, woman, gugu)
     }
 
-    fun randomDouble(): Double {
-        return (200..400).random() + Math.random()
+    fun randomDouble(min: Int, max: Int): Double {
+        return (min..max).random() + Math.random()
     }
 
     fun randomInt(min: Int, max: Int = 10): Int {
