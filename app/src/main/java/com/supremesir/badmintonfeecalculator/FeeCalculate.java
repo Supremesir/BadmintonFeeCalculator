@@ -55,8 +55,8 @@ public final class FeeCalculate {
         double perCourtFee = courtFee / totalCount;
 
         // 没来打球的人的费用（只需要支付场地费）
-        double absentFee = perCourtFee;
-
+        double absentFee = absentCount > 0 ? perCourtFee : 0;
+        
         // 计算女生的总费用（场地费 + 平均羽毛球费）
         double femaleFee = perCourtFee + (shuttlecockFee - moreFee * maleCount) / (femaleCount + maleCount);
 
