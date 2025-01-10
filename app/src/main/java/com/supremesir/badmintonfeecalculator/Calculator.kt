@@ -68,6 +68,7 @@ fun CalculatorScreen(
     var absentCount by remember { mutableStateOf("0") }
     var maleCost by remember { mutableDoubleStateOf(0.0) }
     var femaleCost by remember { mutableDoubleStateOf(0.0) }
+    var absentCost by remember { mutableDoubleStateOf(0.0) }
     val showDialog = remember { mutableStateOf(false) }
 
     val context = LocalContext.current
@@ -87,15 +88,17 @@ fun CalculatorScreen(
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = {
-                    calculateString(
+                    calculateStringWithAbsent(
                         courtFee,
                         badmintonFee,
                         extraMaleFee,
                         maleCount,
-                        femaleCount
+                        femaleCount,
+                        absentCount
                     ).run {
                         maleCost = this.maleFee
                         femaleCost = this.femaleFee
+                        absentCost = this.absentFee
                     }
                 },
                 icon = {
@@ -228,7 +231,7 @@ fun CalculatorScreen(
                     elevation = CardDefaults.cardElevation(
                         defaultElevation = 6.dp
                     ),
-                    onClick = { copyOnClick(context, femaleCost.toString()) },
+                    onClick = { copyOnClick(context, absentCost.toString()) },
                     modifier = Modifier.padding(12.dp),
                 ) {
                     Row(
@@ -241,7 +244,7 @@ fun CalculatorScreen(
                         ) {
                             Text(
                                 modifier = Modifier.padding(8.dp),
-                                text = "$femaleCost",
+                                text = "$absentCost",
                                 fontSize = 24.sp
                             )
                         }
