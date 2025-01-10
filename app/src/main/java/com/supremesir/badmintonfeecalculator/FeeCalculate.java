@@ -85,4 +85,20 @@ public final class FeeCalculate {
         double fee = maleFee * maleCount + femaleFee * femaleCount;
         return Math.round(fee * 10) / 10.0;
     }
+
+    /**
+     * 计算常用人数组的需收费金额
+     * @return
+     */
+    public static double calculateOtherWithAbsent(
+            int maleCount,
+            double maleFee,
+            int femaleCount,
+            double femaleFee,
+            int absentCount,
+            double absentFee
+    ) {
+        double fee = maleFee * maleCount + femaleFee * femaleCount + absentCount * absentFee;
+        return Math.round(fee * 10) / 10.0;
+    }
 }

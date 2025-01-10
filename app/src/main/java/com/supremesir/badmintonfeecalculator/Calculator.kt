@@ -256,7 +256,7 @@ fun CalculatorScreen(
             Spacer(modifier = Modifier.height(12.dp))
             Button(onClick = { showDialog.value = true }) {
                 Text(resources.getString(R.string.other_fee_label))
-                ShowBottomSheetDialog(showDialog, maleCost, femaleCost)
+                ShowBottomSheetDialog(showDialog, maleCost, femaleCost, absentCost)
             }
         }
     }
@@ -266,10 +266,12 @@ fun CalculatorScreen(
 fun ShowBottomSheetDialog(
     show: MutableState<Boolean>,
     maleFee: Double,
-    femaleFee: Double
+    femaleFee: Double,
+    absentFee: Double,
 ) {
     var malePicker by remember { mutableIntStateOf(3) }
     var femalePicker by remember { mutableIntStateOf(0) }
+    var absentPicker by remember { mutableIntStateOf(0) }
     var customFee by remember { mutableDoubleStateOf(0.0) }
     val context = LocalContext.current
     if (show.value) {
@@ -322,12 +324,12 @@ fun ShowBottomSheetDialog(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         // 自动计算自定义男女时的费用
-                        LaunchedEffect(malePicker, femalePicker) {
+                        LaunchedEffect(malePicker, femalePicker, absentPicker) {
                             delay(100) // 等待其他状态变量的变化稳定下来
-                            customFee = calculateFeeCombination(
-                                Pair(malePicker, femalePicker),
-                                maleFee,
-                                femaleFee
+                            customFee = calculateFeeCombinationWithAbsent(
+                                Pair(malePicker, maleFee),
+                                Pair(femalePicker, femaleFee),
+                                Pair(absentPicker, absentFee)
                             )
                         }
 
@@ -367,6 +369,25 @@ fun ShowBottomSheetDialog(
                             )
                             Text(
                                 text = stringResource(id = R.string.woman),
+                                modifier = Modifier
+                                    .align(Alignment.CenterVertically)
+                                    .padding(start = 4.dp, end = 4.dp),
+                                fontSize = 16.sp
+                            )
+                            NumberPicker(
+                                dividersColor = MaterialTheme.colorScheme.primary,
+                                value = absentPicker,
+                                range = 0..10,
+                                onValueChange = {
+                                    absentPicker = it
+                                },
+                                textStyle = TextStyle(
+                                    fontSize = 16.sp,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            )
+                            Text(
+                                text = stringResource(id = R.string.absent),
                                 modifier = Modifier
                                     .align(Alignment.CenterVertically)
                                     .padding(start = 4.dp, end = 4.dp),
@@ -444,4 +465,19 @@ fun calculateFeeCombination(
     femaleFee: Double
 ): Double {
     return FeeCalculate.calculateOther(numPair.first, numPair.second, maleFee, femaleFee)
+}
+
+fun calculateFeeCombinationWithAbsent(
+    malePair: Pair<Int, Double>,
+    femalePair: Pair<Int, Double>,
+    absentPair: Pair<Int, Double>,
+): Double {
+    return FeeCalculate.calculateOtherWithAbsent(
+        malePair.first,
+        malePair.second,
+        femalePair.first,
+        femalePair.second,
+        absentPair.first,
+        absentPair.second
+    )
 }
