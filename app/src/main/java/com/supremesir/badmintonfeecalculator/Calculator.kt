@@ -151,22 +151,22 @@ fun CalculatorScreen(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 OutlinedTextField(
-                    value = femaleCount,
-                    onValueChange = { femaleCount = it },
-                    label = { Text(resources.getString(R.string.female_count_label)) },
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 12.dp, end = 5.dp)
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                OutlinedTextField(
                     value = maleCount,
                     onValueChange = { maleCount = it },
                     label = { Text(resources.getString(R.string.male_count_label)) },
                     modifier = Modifier
                         .weight(1f)
+                        .padding(start = 12.dp, end = 5.dp)
+                )
+                OutlinedTextField(
+                    value = femaleCount,
+                    onValueChange = { femaleCount = it },
+                    label = { Text(resources.getString(R.string.female_count_label)) },
+                    modifier = Modifier
+                        .weight(1f)
                         .padding(start = 5.dp, end = 12.dp)
                 )
+
             }
             Spacer(modifier = Modifier.height(12.dp))
             OutlinedTextField(
