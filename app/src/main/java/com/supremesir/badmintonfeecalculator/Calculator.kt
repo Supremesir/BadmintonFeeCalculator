@@ -1,6 +1,5 @@
 package com.supremesir.badmintonfeecalculator
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -17,7 +16,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
@@ -35,17 +33,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.window.core.layout.WindowSizeClass
-import com.chargemap.compose.numberpicker.NumberPicker
 import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
@@ -53,6 +48,7 @@ import com.supremesir.badmintonfeecalculator.ui.liquid.LiquidAtmosphere
 import com.supremesir.badmintonfeecalculator.ui.liquid.LiquidBottomSheet
 import com.supremesir.badmintonfeecalculator.ui.liquid.LiquidButton
 import com.supremesir.badmintonfeecalculator.ui.liquid.LiquidPanel
+import com.supremesir.badmintonfeecalculator.ui.liquid.LiquidWheelPicker
 import kotlinx.coroutines.delay
 
 @Composable
@@ -259,8 +255,7 @@ fun CalculatorScreen(
             backdrop = backdrop,
             contentColor = contentColor,
             glassSurface = glassSurface,
-            dimColor = if (darkTheme) Color(0xFF121212).copy(alpha = 0.45f) else Color(0xFF29293A).copy(alpha = 0.22f),
-            accent = accent
+            dimColor = if (darkTheme) Color(0xFF121212).copy(alpha = 0.45f) else Color(0xFF29293A).copy(alpha = 0.22f)
         )
     }
 }
@@ -307,33 +302,22 @@ fun ShowBottomSheetDialog(
     backdrop: Backdrop,
     contentColor: Color,
     glassSurface: Color,
-    dimColor: Color,
-    accent: Color
+    dimColor: Color
 ) {
     var malePicker by remember { mutableIntStateOf(3) }
     var femalePicker by remember { mutableIntStateOf(0) }
     var absentPicker by remember { mutableIntStateOf(0) }
     var customFee by remember { mutableDoubleStateOf(0.0) }
     val context = LocalContext.current
-    val pickerText = TextStyle(fontSize = 16.sp, color = contentColor)
 
     LiquidBottomSheet(
         visible = show.value,
         onDismiss = { show.value = false },
         backdrop = backdrop,
         surfaceColor = glassSurface,
-        dimColor = dimColor
+        dimColor = dimColor,
+        handleColor = contentColor.copy(alpha = 0.28f)
     ) {
-        Box(
-            modifier = Modifier
-                .padding(top = 4.dp, bottom = 16.dp)
-                .align(Alignment.CenterHorizontally)
-                .clip(RoundedCornerShape(50))
-                .background(contentColor.copy(alpha = 0.22f))
-                .width(40.dp)
-                .height(4.dp)
-        )
-
         Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
             repeat(6) {
                 val pair = getNumCombination(it)
@@ -367,7 +351,6 @@ fun ShowBottomSheetDialog(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { copyOnClick(context, customFee.toString()) }
                     .padding(horizontal = 8.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -380,50 +363,53 @@ fun ShowBottomSheetDialog(
                     )
                 }
 
-                Row(modifier = Modifier.weight(1F)) {
-                    NumberPicker(
-                        dividersColor = accent,
+                Row(
+                    modifier = Modifier.weight(1F),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    LiquidWheelPicker(
                         value = malePicker,
                         range = 0..10,
                         onValueChange = { malePicker = it },
-                        textStyle = pickerText
+                        backdrop = backdrop,
+                        textColor = contentColor,
+                        modifier = Modifier.width(64.dp),
+                        surfaceColor = glassSurface
                     )
                     Text(
                         text = stringResource(id = R.string.man),
-                        modifier = Modifier
-                            .align(Alignment.CenterVertically)
-                            .padding(horizontal = 4.dp),
+                        modifier = Modifier.padding(end = 6.dp),
                         color = contentColor,
                         fontSize = 16.sp
                     )
-                    NumberPicker(
-                        dividersColor = accent,
+                    LiquidWheelPicker(
                         value = femalePicker,
                         range = 0..10,
                         onValueChange = { femalePicker = it },
-                        textStyle = pickerText
+                        backdrop = backdrop,
+                        textColor = contentColor,
+                        modifier = Modifier.width(64.dp),
+                        surfaceColor = glassSurface
                     )
                     Text(
                         text = stringResource(id = R.string.woman),
-                        modifier = Modifier
-                            .align(Alignment.CenterVertically)
-                            .padding(horizontal = 4.dp),
+                        modifier = Modifier.padding(end = 6.dp),
                         color = contentColor,
                         fontSize = 16.sp
                     )
                     if (absentFee > 0) {
-                        NumberPicker(
-                            dividersColor = accent,
+                        LiquidWheelPicker(
                             value = absentPicker,
                             range = 0..10,
                             onValueChange = { absentPicker = it },
-                            textStyle = pickerText
+                            backdrop = backdrop,
+                            textColor = contentColor,
+                            modifier = Modifier.width(64.dp),
+                            surfaceColor = glassSurface
                         )
                         Text(
                             text = stringResource(id = R.string.absent),
-                            modifier = Modifier
-                                .align(Alignment.CenterVertically)
-                                .padding(horizontal = 4.dp),
+                            modifier = Modifier.padding(end = 4.dp),
                             color = contentColor,
                             fontSize = 16.sp
                         )
@@ -431,6 +417,7 @@ fun ShowBottomSheetDialog(
                 }
                 Text(
                     text = "$customFee",
+                    modifier = Modifier.clickable { copyOnClick(context, customFee.toString()) },
                     color = contentColor,
                     fontSize = 21.sp,
                     fontWeight = FontWeight.Medium

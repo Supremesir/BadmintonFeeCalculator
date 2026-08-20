@@ -46,7 +46,6 @@ android {
 
 dependencies {
 
-    implementation(libs.number.picker)
     implementation(libs.backdrop)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

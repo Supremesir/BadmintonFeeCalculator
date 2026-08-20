@@ -9,7 +9,6 @@ espressoCore = "3.7.0"
 lifecycleRuntimeKtx = "2.11.0"
 activityCompose = "1.13.0"
 composeBom = "2026.08.00"
-numberPicker = "1.0.3"
 backdrop = "2.0.0"
 
 [libraries]
@@ -30,7 +29,6 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-material3-adaptive = { group = "androidx.compose.material3.adaptive", name = "adaptive" }
 androidx-material3-window-size = { group = "androidx.compose.material3", name = "material3-window-size-class" }
-number-picker = { group = "com.chargemap.compose", name = "numberpicker", version.ref = "numberPicker"}
 backdrop = { group = "io.github.kyant0", name = "backdrop", version.ref = "backdrop" }
 
 [plugins]
