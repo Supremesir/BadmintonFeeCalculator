@@ -49,6 +49,7 @@ fun LiquidWheelPicker(
     modifier: Modifier = Modifier,
     visibleCount: Int = 5,
     itemHeight: Dp = 36.dp,
+    wheelWidth: Dp = 44.dp,
     surfaceColor: Color = Color.White.copy(alpha = 0.22f)
 ) {
     val paddingCount = visibleCount / 2
@@ -100,7 +101,7 @@ fun LiquidWheelPicker(
 
     Box(
         modifier
-            .width(44.dp)
+            .width(wheelWidth)
             .height(itemHeight * visibleCount)
             .clipToBounds()
     ) {

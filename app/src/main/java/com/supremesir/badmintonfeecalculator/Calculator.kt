@@ -6,10 +6,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -18,8 +17,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
@@ -48,8 +45,10 @@ import com.supremesir.badmintonfeecalculator.ui.liquid.LiquidAtmosphere
 import com.supremesir.badmintonfeecalculator.ui.liquid.LiquidBottomSheet
 import com.supremesir.badmintonfeecalculator.ui.liquid.LiquidButton
 import com.supremesir.badmintonfeecalculator.ui.liquid.LiquidGlassChip
+import com.supremesir.badmintonfeecalculator.ui.liquid.LiquidInputTile
 import com.supremesir.badmintonfeecalculator.ui.liquid.LiquidInsetGroup
-import com.supremesir.badmintonfeecalculator.ui.liquid.LiquidPanel
+import com.supremesir.badmintonfeecalculator.ui.liquid.LiquidResultTile
+import com.supremesir.badmintonfeecalculator.ui.liquid.LiquidTapToEditRow
 import com.supremesir.badmintonfeecalculator.ui.liquid.LiquidWheelPicker
 import kotlinx.coroutines.delay
 
@@ -60,9 +59,9 @@ fun CalculatorScreen(
     var courtFee by remember { mutableStateOf("") }
     var badmintonFee by remember { mutableStateOf("") }
     var extraMaleFee by remember { mutableStateOf("5") }
-    var maleCount by remember { mutableStateOf("") }
-    var femaleCount by remember { mutableStateOf("") }
-    var absentCount by remember { mutableStateOf("0") }
+    var maleCount by remember { mutableIntStateOf(0) }
+    var femaleCount by remember { mutableIntStateOf(0) }
+    var absentCount by remember { mutableIntStateOf(0) }
     var maleCost by remember { mutableDoubleStateOf(0.0) }
     var femaleCost by remember { mutableDoubleStateOf(0.0) }
     var absentCost by remember { mutableDoubleStateOf(0.0) }
@@ -76,18 +75,6 @@ fun CalculatorScreen(
     val glassSurface = if (darkTheme) Color.White.copy(alpha = 0.10f) else Color.White.copy(alpha = 0.20f)
     val accent = Color(0xFF0088FF)
     val backdrop = rememberLayerBackdrop()
-    val fieldColors = OutlinedTextFieldDefaults.colors(
-        focusedTextColor = contentColor,
-        unfocusedTextColor = contentColor,
-        focusedLabelColor = mutedColor,
-        unfocusedLabelColor = mutedColor,
-        cursorColor = accent,
-        focusedBorderColor = contentColor.copy(alpha = 0.35f),
-        unfocusedBorderColor = contentColor.copy(alpha = 0.16f),
-        focusedContainerColor = Color.Transparent,
-        unfocusedContainerColor = Color.Transparent,
-        disabledContainerColor = Color.Transparent
-    )
 
     Box(Modifier.fillMaxSize()) {
         LiquidAtmosphere(
@@ -101,165 +88,191 @@ fun CalculatorScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
-                .verticalScroll(rememberScrollState())
+                .navigationBarsPadding()
+                .imePadding()
                 .padding(horizontal = 20.dp)
-                .padding(bottom = 120.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Text(
                 text = resources.getString(R.string.app_name),
-                modifier = Modifier.padding(top = 20.dp, bottom = 4.dp),
+                modifier = Modifier.padding(top = 16.dp, bottom = 16.dp),
                 color = contentColor,
                 fontSize = 28.sp,
                 fontWeight = FontWeight.Medium
             )
 
-            LiquidPanel(backdrop = backdrop, surfaceColor = glassSurface) {
-                GlassFieldRow {
-                    OutlinedTextField(
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    LiquidInputTile(
+                        label = resources.getString(R.string.court_fee_label),
                         value = courtFee,
                         onValueChange = { courtFee = it },
-                        label = { Text(resources.getString(R.string.court_fee_label)) },
-                        modifier = Modifier.weight(1f),
-                        colors = fieldColors,
-                        singleLine = true
+                        backdrop = backdrop,
+                        textColor = contentColor,
+                        mutedColor = mutedColor,
+                        surfaceColor = glassSurface,
+                        accent = accent,
+                        modifier = Modifier.weight(1f)
                     )
-                    OutlinedTextField(
+                    LiquidInputTile(
+                        label = resources.getString(R.string.shuttlecock_fee_label),
                         value = badmintonFee,
                         onValueChange = { badmintonFee = it },
-                        label = { Text(resources.getString(R.string.shuttlecock_fee_label)) },
-                        modifier = Modifier.weight(1f),
-                        colors = fieldColors,
-                        singleLine = true
+                        backdrop = backdrop,
+                        textColor = contentColor,
+                        mutedColor = mutedColor,
+                        surfaceColor = glassSurface,
+                        accent = accent,
+                        modifier = Modifier.weight(1f)
                     )
                 }
-                Spacer(Modifier.height(12.dp))
-                OutlinedTextField(
-                    value = extraMaleFee,
-                    onValueChange = { extraMaleFee = it },
-                    label = { Text(resources.getString(R.string.extra_fee_label)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = fieldColors,
-                    singleLine = true
-                )
-                Spacer(Modifier.height(12.dp))
-                GlassFieldRow {
-                    OutlinedTextField(
-                        value = maleCount,
-                        onValueChange = { maleCount = it },
-                        label = { Text(resources.getString(R.string.male_count_label)) },
-                        modifier = Modifier.weight(1f),
-                        colors = fieldColors,
-                        singleLine = true
-                    )
-                    OutlinedTextField(
-                        value = femaleCount,
-                        onValueChange = { femaleCount = it },
-                        label = { Text(resources.getString(R.string.female_count_label)) },
-                        modifier = Modifier.weight(1f),
-                        colors = fieldColors,
-                        singleLine = true
+
+                LiquidInsetGroup(backdrop = backdrop, surfaceColor = glassSurface) {
+                    LiquidTapToEditRow(
+                        label = resources.getString(R.string.extra_fee_label),
+                        value = extraMaleFee,
+                        onValueChange = { extraMaleFee = it },
+                        backdrop = backdrop,
+                        textColor = contentColor,
+                        mutedColor = mutedColor,
+                        surfaceColor = glassSurface,
+                        accent = accent
                     )
                 }
-                Spacer(Modifier.height(12.dp))
-                OutlinedTextField(
-                    value = absentCount,
-                    onValueChange = { absentCount = it },
-                    label = { Text(resources.getString(R.string.absent_count_label)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = fieldColors,
-                    singleLine = true
-                )
+
+                LiquidInsetGroup(backdrop = backdrop, surfaceColor = glassSurface) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        CountWheel(
+                            value = maleCount,
+                            onValueChange = { maleCount = it },
+                            label = resources.getString(R.string.man),
+                            backdrop = backdrop,
+                            textColor = contentColor,
+                            labelColor = mutedColor,
+                            surfaceColor = glassSurface
+                        )
+                        CountWheel(
+                            value = femaleCount,
+                            onValueChange = { femaleCount = it },
+                            label = resources.getString(R.string.woman),
+                            backdrop = backdrop,
+                            textColor = contentColor,
+                            labelColor = mutedColor,
+                            surfaceColor = glassSurface
+                        )
+                        CountWheel(
+                            value = absentCount,
+                            onValueChange = { absentCount = it },
+                            label = resources.getString(R.string.absent),
+                            backdrop = backdrop,
+                            textColor = contentColor,
+                            labelColor = mutedColor,
+                            surfaceColor = glassSurface
+                        )
+                    }
+                }
             }
 
-            LiquidInsetGroup(backdrop = backdrop, surfaceColor = glassSurface) {
-                FeeRow(
-                    label = resources.getString(R.string.male_fee_label),
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                LiquidResultTile(
+                    label = resources.getString(R.string.man),
                     value = maleCost,
-                    contentColor = contentColor,
                     backdrop = backdrop,
-                    glassSurface = glassSurface,
+                    textColor = contentColor,
+                    mutedColor = mutedColor,
+                    surfaceColor = glassSurface,
+                    modifier = Modifier.weight(1f),
                     onClick = { copyOnClick(context, maleCost.toString()) }
                 )
-                HorizontalDivider(
-                    modifier = Modifier.padding(start = 16.dp, end = 12.dp),
-                    thickness = 0.5.dp,
-                    color = contentColor.copy(alpha = 0.08f)
-                )
-                FeeRow(
-                    label = resources.getString(R.string.female_fee_label),
+                LiquidResultTile(
+                    label = resources.getString(R.string.woman),
                     value = femaleCost,
-                    contentColor = contentColor,
                     backdrop = backdrop,
-                    glassSurface = glassSurface,
+                    textColor = contentColor,
+                    mutedColor = mutedColor,
+                    surfaceColor = glassSurface,
+                    modifier = Modifier.weight(1f),
                     onClick = { copyOnClick(context, femaleCost.toString()) }
                 )
-                if (absentCount.safeToInt() > 0) {
-                    HorizontalDivider(
-                        modifier = Modifier.padding(start = 16.dp, end = 12.dp),
-                        thickness = 0.5.dp,
-                        color = contentColor.copy(alpha = 0.08f)
-                    )
-                    FeeRow(
-                        label = resources.getString(R.string.absent_fee_label),
+                if (absentCount > 0) {
+                    LiquidResultTile(
+                        label = resources.getString(R.string.absent),
                         value = absentCost,
-                        contentColor = contentColor,
                         backdrop = backdrop,
-                        glassSurface = glassSurface,
+                        textColor = contentColor,
+                        mutedColor = mutedColor,
+                        surfaceColor = glassSurface,
+                        modifier = Modifier.weight(1f),
                         onClick = { copyOnClick(context, absentCost.toString()) }
                     )
                 }
             }
-        }
 
-        Row(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .navigationBarsPadding()
-                .padding(horizontal = 20.dp, vertical = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            LiquidButton(
-                onClick = { showDialog.value = true },
-                backdrop = backdrop,
-                modifier = Modifier.weight(1f),
-                surfaceColor = glassSurface
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Text(
-                    text = resources.getString(R.string.other_fee_label),
-                    color = contentColor
-                )
-            }
-            LiquidButton(
-                onClick = {
-                    calculateStringWithAbsent(
-                        courtFee,
-                        badmintonFee,
-                        extraMaleFee,
-                        maleCount,
-                        femaleCount,
-                        absentCount
-                    ).run {
-                        maleCost = this.maleFee
-                        femaleCost = this.femaleFee
-                        absentCost = this.absentFee
-                    }
-                },
-                backdrop = backdrop,
-                modifier = Modifier.weight(1f),
-                tint = accent
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.calculation),
-                    contentDescription = resources.getString(R.string.calculate),
-                    modifier = Modifier.size(22.dp),
-                    tint = Color.White
-                )
-                Text(
-                    text = resources.getString(R.string.calculate),
-                    color = Color.White
-                )
+                LiquidButton(
+                    onClick = { showDialog.value = true },
+                    backdrop = backdrop,
+                    modifier = Modifier.weight(1f),
+                    surfaceColor = glassSurface
+                ) {
+                    Text(
+                        text = resources.getString(R.string.other_fee_label),
+                        color = contentColor
+                    )
+                }
+                LiquidButton(
+                    onClick = {
+                        calculateStringWithAbsent(
+                            courtFee,
+                            badmintonFee,
+                            extraMaleFee,
+                            maleCount.toString(),
+                            femaleCount.toString(),
+                            absentCount.toString()
+                        ).run {
+                            maleCost = this.maleFee
+                            femaleCost = this.femaleFee
+                            absentCost = this.absentFee
+                        }
+                    },
+                    backdrop = backdrop,
+                    modifier = Modifier.weight(1f),
+                    tint = accent
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.calculation),
+                        contentDescription = resources.getString(R.string.calculate),
+                        modifier = Modifier.size(22.dp),
+                        tint = Color.White
+                    )
+                    Text(
+                        text = resources.getString(R.string.calculate),
+                        color = Color.White
+                    )
+                }
             }
         }
 
@@ -272,47 +285,6 @@ fun CalculatorScreen(
             contentColor = contentColor,
             glassSurface = glassSurface,
             dimColor = if (darkTheme) Color(0xFF121212).copy(alpha = 0.45f) else Color(0xFF29293A).copy(alpha = 0.22f)
-        )
-    }
-}
-
-@Composable
-private fun GlassFieldRow(content: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
-        content = content
-    )
-}
-
-@Composable
-private fun FeeRow(
-    label: String,
-    value: Double,
-    contentColor: Color,
-    backdrop: Backdrop,
-    glassSurface: Color,
-    onClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(start = 16.dp, end = 10.dp, top = 8.dp, bottom = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = label,
-            modifier = Modifier.weight(1f),
-            color = contentColor.copy(alpha = 0.62f),
-            fontSize = 16.sp
-        )
-        LiquidGlassChip(
-            text = "$value",
-            backdrop = backdrop,
-            textColor = contentColor,
-            surfaceColor = glassSurface,
-            onClick = onClick
         )
     }
 }
@@ -449,6 +421,37 @@ fun ShowBottomSheetDialog(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun CountWheel(
+    value: Int,
+    onValueChange: (Int) -> Unit,
+    label: String,
+    backdrop: Backdrop,
+    textColor: Color,
+    labelColor: Color,
+    surfaceColor: Color
+) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        LiquidWheelPicker(
+            value = value,
+            range = 0..20,
+            onValueChange = onValueChange,
+            backdrop = backdrop,
+            textColor = textColor,
+            surfaceColor = surfaceColor,
+            wheelWidth = 52.dp
+        )
+        Text(
+            text = label,
+            modifier = Modifier.padding(top = 6.dp),
+            color = labelColor,
+            fontSize = 13.sp,
+            maxLines = 1,
+            softWrap = false
+        )
     }
 }
 
