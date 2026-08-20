@@ -1,12 +1,16 @@
 package com.supremesir.badmintonfeecalculator.ui.liquid
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,8 +29,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextStyle
@@ -119,6 +126,7 @@ fun LiquidInputTile(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun LiquidTapToEditRow(
     label: String,
@@ -130,34 +138,59 @@ fun LiquidTapToEditRow(
     surfaceColor: Color,
     accent: Color,
     modifier: Modifier = Modifier,
-    defaultValue: String = "5"
+    defaultValue: String = "5",
+    editing: Boolean,
+    onEditingChange: (Boolean) -> Unit,
+    onBoundsInWindow: (Rect) -> Unit = {}
 ) {
-    var editing by remember { mutableStateOf(false) }
     var hadFocus by remember { mutableStateOf(false) }
+    var imeWasVisible by remember { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
     val focusManager = LocalFocusManager.current
     val keyboard = LocalSoftwareKeyboardController.current
+    val imeVisible = WindowInsets.isImeVisible
 
     fun finishEditing() {
+        if (!editing) return
         if (value.isBlank()) onValueChange(defaultValue)
-        editing = false
+        onEditingChange(false)
         hadFocus = false
+        imeWasVisible = false
         keyboard?.hide()
-        focusManager.clearFocus()
+        focusManager.clearFocus(force = true)
     }
 
+    BackHandler(enabled = editing) { finishEditing() }
+
     LaunchedEffect(editing) {
-        if (editing) focusRequester.requestFocus()
+        if (editing) {
+            focusRequester.requestFocus()
+        } else {
+            imeWasVisible = false
+        }
+    }
+
+    LaunchedEffect(editing, imeVisible) {
+        if (!editing) {
+            imeWasVisible = false
+            return@LaunchedEffect
+        }
+        if (imeVisible) {
+            imeWasVisible = true
+        } else if (imeWasVisible) {
+            finishEditing()
+        }
     }
 
     Row(
         modifier
             .fillMaxWidth()
             .heightIn(min = 48.dp)
+            .onGloballyPositioned { onBoundsInWindow(it.boundsInWindow()) }
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null
-            ) { editing = true }
+            ) { onEditingChange(true) }
             .padding(start = 16.dp, end = 12.dp, top = 8.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -215,7 +248,7 @@ fun LiquidTapToEditRow(
                 backdrop = backdrop,
                 textColor = textColor,
                 surfaceColor = surfaceColor,
-                onClick = { editing = true }
+                onClick = { onEditingChange(true) }
             )
         }
     }

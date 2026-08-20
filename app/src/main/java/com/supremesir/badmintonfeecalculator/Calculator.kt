@@ -27,11 +27,19 @@ import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.changedToDown
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -59,6 +67,8 @@ fun CalculatorScreen(
     var courtFee by remember { mutableStateOf("") }
     var badmintonFee by remember { mutableStateOf("") }
     var extraMaleFee by remember { mutableStateOf("5") }
+    var extraFeeEditing by remember { mutableStateOf(false) }
+    var extraFeeRowBounds by remember { mutableStateOf(Rect.Zero) }
     var maleCount by remember { mutableIntStateOf(0) }
     var femaleCount by remember { mutableIntStateOf(0) }
     var absentCount by remember { mutableIntStateOf(0) }
@@ -75,8 +85,32 @@ fun CalculatorScreen(
     val glassSurface = if (darkTheme) Color.White.copy(alpha = 0.10f) else Color.White.copy(alpha = 0.20f)
     val accent = Color(0xFF0088FF)
     val backdrop = rememberLayerBackdrop()
+    val focusManager = LocalFocusManager.current
+    val extraFeeRowBoundsState = rememberUpdatedState(extraFeeRowBounds)
+    val extraFeeEditingState = rememberUpdatedState(extraFeeEditing)
+    var rootCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
 
-    Box(Modifier.fillMaxSize()) {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .onGloballyPositioned { rootCoordinates = it }
+            .pointerInput(Unit) {
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent(PointerEventPass.Initial)
+                        if (!extraFeeEditingState.value) continue
+                        val down = event.changes.find { it.changedToDown() } ?: continue
+                        val coords = rootCoordinates ?: continue
+                        val tapInWindow = coords.localToWindow(down.position)
+                        if (!extraFeeRowBoundsState.value.contains(tapInWindow)) {
+                            extraFeeEditing = false
+                            if (extraMaleFee.isBlank()) extraMaleFee = "5"
+                            focusManager.clearFocus(force = true)
+                        }
+                    }
+                }
+            }
+    ) {
         LiquidAtmosphere(
             modifier = Modifier
                 .fillMaxSize()
@@ -143,7 +177,10 @@ fun CalculatorScreen(
                         textColor = contentColor,
                         mutedColor = mutedColor,
                         surfaceColor = glassSurface,
-                        accent = accent
+                        accent = accent,
+                        editing = extraFeeEditing,
+                        onEditingChange = { extraFeeEditing = it },
+                        onBoundsInWindow = { extraFeeRowBounds = it }
                     )
                 }
 
