@@ -1,32 +1,28 @@
 package com.supremesir.badmintonfeecalculator
 
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,24 +35,26 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowSizeClass
-import androidx.window.core.layout.WindowWidthSizeClass
 import com.chargemap.compose.numberpicker.NumberPicker
-import com.holix.android.bottomsheetdialog.compose.BottomSheetDialog
-import com.holix.android.bottomsheetdialog.compose.BottomSheetDialogProperties
+import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import com.supremesir.badmintonfeecalculator.ui.liquid.LiquidAtmosphere
+import com.supremesir.badmintonfeecalculator.ui.liquid.LiquidBottomSheet
 import com.supremesir.badmintonfeecalculator.ui.liquid.LiquidButton
+import com.supremesir.badmintonfeecalculator.ui.liquid.LiquidPanel
 import kotlinx.coroutines.delay
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalculatorScreen(
     windowSizeClass: WindowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
@@ -74,24 +72,153 @@ fun CalculatorScreen(
 
     val context = LocalContext.current
     val resources = context.resources
-    val backgroundColor = MaterialTheme.colorScheme.background
-    val backdrop = rememberLayerBackdrop {
-        drawRect(backgroundColor)
-        drawContent()
-    }
+    val darkTheme = isSystemInDarkTheme()
+    val contentColor = if (darkTheme) Color.White else Color(0xFF1B1B1F)
+    val mutedColor = contentColor.copy(alpha = 0.62f)
+    val glassSurface = if (darkTheme) Color.White.copy(alpha = 0.12f) else Color.White.copy(alpha = 0.34f)
+    val accent = Color(0xFF0088FF)
+    val backdrop = rememberLayerBackdrop()
+    val fieldColors = OutlinedTextFieldDefaults.colors(
+        focusedTextColor = contentColor,
+        unfocusedTextColor = contentColor,
+        focusedLabelColor = mutedColor,
+        unfocusedLabelColor = mutedColor,
+        cursorColor = accent,
+        focusedBorderColor = contentColor.copy(alpha = 0.35f),
+        unfocusedBorderColor = contentColor.copy(alpha = 0.16f),
+        focusedContainerColor = Color.Transparent,
+        unfocusedContainerColor = Color.Transparent,
+        disabledContainerColor = Color.Transparent
+    )
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                colors = topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.surface,
-                ),
-                title = { Text(resources.getString(R.string.app_name)) }
+    Box(Modifier.fillMaxSize()) {
+        LiquidAtmosphere(
+            modifier = Modifier
+                .fillMaxSize()
+                .layerBackdrop(backdrop),
+            darkTheme = darkTheme
+        )
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp)
+                .padding(bottom = 120.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = resources.getString(R.string.app_name),
+                modifier = Modifier.padding(top = 20.dp, bottom = 4.dp),
+                color = contentColor,
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Medium
             )
-        },
-        // 计算按钮
-        floatingActionButton = {
+
+            LiquidPanel(backdrop = backdrop, surfaceColor = glassSurface) {
+                GlassFieldRow {
+                    OutlinedTextField(
+                        value = courtFee,
+                        onValueChange = { courtFee = it },
+                        label = { Text(resources.getString(R.string.court_fee_label)) },
+                        modifier = Modifier.weight(1f),
+                        colors = fieldColors,
+                        singleLine = true
+                    )
+                    OutlinedTextField(
+                        value = badmintonFee,
+                        onValueChange = { badmintonFee = it },
+                        label = { Text(resources.getString(R.string.shuttlecock_fee_label)) },
+                        modifier = Modifier.weight(1f),
+                        colors = fieldColors,
+                        singleLine = true
+                    )
+                }
+                Spacer(Modifier.height(12.dp))
+                OutlinedTextField(
+                    value = extraMaleFee,
+                    onValueChange = { extraMaleFee = it },
+                    label = { Text(resources.getString(R.string.extra_fee_label)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = fieldColors,
+                    singleLine = true
+                )
+                Spacer(Modifier.height(12.dp))
+                GlassFieldRow {
+                    OutlinedTextField(
+                        value = maleCount,
+                        onValueChange = { maleCount = it },
+                        label = { Text(resources.getString(R.string.male_count_label)) },
+                        modifier = Modifier.weight(1f),
+                        colors = fieldColors,
+                        singleLine = true
+                    )
+                    OutlinedTextField(
+                        value = femaleCount,
+                        onValueChange = { femaleCount = it },
+                        label = { Text(resources.getString(R.string.female_count_label)) },
+                        modifier = Modifier.weight(1f),
+                        colors = fieldColors,
+                        singleLine = true
+                    )
+                }
+                Spacer(Modifier.height(12.dp))
+                OutlinedTextField(
+                    value = absentCount,
+                    onValueChange = { absentCount = it },
+                    label = { Text(resources.getString(R.string.absent_count_label)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = fieldColors,
+                    singleLine = true
+                )
+            }
+
+            LiquidPanel(backdrop = backdrop, surfaceColor = glassSurface) {
+                FeeRow(
+                    label = resources.getString(R.string.male_fee_label),
+                    value = maleCost,
+                    contentColor = contentColor,
+                    onClick = { copyOnClick(context, maleCost.toString()) }
+                )
+                Spacer(Modifier.height(12.dp))
+                FeeRow(
+                    label = resources.getString(R.string.female_fee_label),
+                    value = femaleCost,
+                    contentColor = contentColor,
+                    onClick = { copyOnClick(context, femaleCost.toString()) }
+                )
+                if (absentCount.safeToInt() > 0) {
+                    Spacer(Modifier.height(12.dp))
+                    FeeRow(
+                        label = resources.getString(R.string.absent_fee_label),
+                        value = absentCost,
+                        contentColor = contentColor,
+                        onClick = { copyOnClick(context, absentCost.toString()) }
+                    )
+                }
+            }
+        }
+
+        Row(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .navigationBarsPadding()
+                .padding(horizontal = 20.dp, vertical = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            LiquidButton(
+                onClick = { showDialog.value = true },
+                backdrop = backdrop,
+                modifier = Modifier.weight(1f),
+                surfaceColor = glassSurface
+            ) {
+                Text(
+                    text = resources.getString(R.string.other_fee_label),
+                    color = contentColor
+                )
+            }
             LiquidButton(
                 onClick = {
                     calculateStringWithAbsent(
@@ -108,179 +235,66 @@ fun CalculatorScreen(
                     }
                 },
                 backdrop = backdrop,
-                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.weight(1f),
+                tint = accent
             ) {
                 Icon(
                     painter = painterResource(R.drawable.calculation),
                     contentDescription = resources.getString(R.string.calculate),
-                    modifier = Modifier.size(24.dp),
-                    tint = MaterialTheme.colorScheme.onPrimary
+                    modifier = Modifier.size(22.dp),
+                    tint = Color.White
                 )
                 Text(
                     text = resources.getString(R.string.calculate),
-                    color = MaterialTheme.colorScheme.onPrimary
+                    color = Color.White
                 )
             }
         }
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .layerBackdrop(backdrop),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-            // 内容输入区
-            Spacer(modifier = Modifier.height(12.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                OutlinedTextField(
-                    value = courtFee,
-                    onValueChange = { courtFee = it },
-                    label = { Text(resources.getString(R.string.court_fee_label)) },
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 12.dp, end = 5.dp)
-                )
-                OutlinedTextField(
-                    value = badmintonFee,
-                    onValueChange = { badmintonFee = it },
-                    label = { Text(resources.getString(R.string.shuttlecock_fee_label)) },
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 5.dp, end = 12.dp)
-                )
-            }
-            Spacer(modifier = Modifier.height(12.dp))
-            OutlinedTextField(
-                value = extraMaleFee,
-                onValueChange = { extraMaleFee = it },
-                label = { Text(resources.getString(R.string.extra_fee_label)) },
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                OutlinedTextField(
-                    value = maleCount,
-                    onValueChange = { maleCount = it },
-                    label = { Text(resources.getString(R.string.male_count_label)) },
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 12.dp, end = 5.dp)
-                )
-                OutlinedTextField(
-                    value = femaleCount,
-                    onValueChange = { femaleCount = it },
-                    label = { Text(resources.getString(R.string.female_count_label)) },
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(start = 5.dp, end = 12.dp)
-                )
 
-            }
-            Spacer(modifier = Modifier.height(12.dp))
-            OutlinedTextField(
-                value = absentCount,
-                onValueChange = { absentCount = it },
-                label = { Text(resources.getString(R.string.absent_count_label)) },
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-            // 结果展示区
-            ElevatedCard(
-                elevation = CardDefaults.cardElevation(
-                    defaultElevation = 6.dp
-                ),
-                onClick = { copyOnClick(context, maleCost.toString()) },
-                modifier = Modifier.padding(12.dp),
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(12.dp)
-                ) {
-                    Text(resources.getString(R.string.male_fee_label))
-                    OutlinedCard(
-                        border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
-                    ) {
-                        Text(
-                            modifier = Modifier.padding(8.dp),
-                            text = "$maleCost",
-                            fontSize = 24.sp
-                        )
-                    }
-                }
-            }
-            ElevatedCard(
-                elevation = CardDefaults.cardElevation(
-                    defaultElevation = 6.dp
-                ),
-                onClick = { copyOnClick(context, femaleCost.toString()) },
-                modifier = Modifier.padding(12.dp),
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(12.dp)
-                ) {
-                    Text(resources.getString(R.string.female_fee_label))
-                    OutlinedCard(
-                        border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
-                    ) {
-                        Text(
-                            modifier = Modifier.padding(8.dp),
-                            text = "$femaleCost",
-                            fontSize = 24.sp
-                        )
-                    }
+        ShowBottomSheetDialog(
+            show = showDialog,
+            maleFee = maleCost,
+            femaleFee = femaleCost,
+            absentFee = absentCost,
+            backdrop = backdrop,
+            contentColor = contentColor,
+            glassSurface = glassSurface,
+            dimColor = if (darkTheme) Color(0xFF121212).copy(alpha = 0.45f) else Color(0xFF29293A).copy(alpha = 0.22f),
+            accent = accent
+        )
+    }
+}
 
-                }
-            }
-            if (absentCount.safeToInt() > 0){
-                ElevatedCard(
-                    elevation = CardDefaults.cardElevation(
-                        defaultElevation = 6.dp
-                    ),
-                    onClick = { copyOnClick(context, absentCost.toString()) },
-                    modifier = Modifier.padding(12.dp),
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(12.dp)
-                    ) {
-                        Text(resources.getString(R.string.absent_fee_label))
-                        OutlinedCard(
-                            border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
-                        ) {
-                            Text(
-                                modifier = Modifier.padding(8.dp),
-                                text = "$absentCost",
-                                fontSize = 24.sp
-                            )
-                        }
+@Composable
+private fun GlassFieldRow(content: @Composable androidx.compose.foundation.layout.RowScope.() -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        content = content
+    )
+}
 
-                    }
-
-                }
-            }
-            }
-            Spacer(modifier = Modifier.height(12.dp))
-            LiquidButton(
-                onClick = { showDialog.value = true },
-                backdrop = backdrop,
-                surfaceColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.35f),
-            ) {
-                Text(resources.getString(R.string.other_fee_label))
-            }
-            ShowBottomSheetDialog(showDialog, maleCost, femaleCost, absentCost)
-        }
+@Composable
+private fun FeeRow(
+    label: String,
+    value: Double,
+    contentColor: Color,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(text = label, color = contentColor.copy(alpha = 0.72f), fontSize = 16.sp)
+        Text(
+            text = "$value",
+            color = contentColor,
+            fontSize = 26.sp,
+            fontWeight = FontWeight.Medium
+        )
     }
 }
 
@@ -290,141 +304,137 @@ fun ShowBottomSheetDialog(
     maleFee: Double,
     femaleFee: Double,
     absentFee: Double,
+    backdrop: Backdrop,
+    contentColor: Color,
+    glassSurface: Color,
+    dimColor: Color,
+    accent: Color
 ) {
     var malePicker by remember { mutableIntStateOf(3) }
     var femalePicker by remember { mutableIntStateOf(0) }
     var absentPicker by remember { mutableIntStateOf(0) }
     var customFee by remember { mutableDoubleStateOf(0.0) }
     val context = LocalContext.current
-    if (show.value) {
-        BottomSheetDialog(
-            onDismissRequest = {
-                show.value = false
-            },
-            properties = BottomSheetDialogProperties()
-        ) {
-            Surface(
-                shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-                color = MaterialTheme.colorScheme.background
+    val pickerText = TextStyle(fontSize = 16.sp, color = contentColor)
+
+    LiquidBottomSheet(
+        visible = show.value,
+        onDismiss = { show.value = false },
+        backdrop = backdrop,
+        surfaceColor = glassSurface,
+        dimColor = dimColor
+    ) {
+        Box(
+            modifier = Modifier
+                .padding(top = 4.dp, bottom = 16.dp)
+                .align(Alignment.CenterHorizontally)
+                .clip(RoundedCornerShape(50))
+                .background(contentColor.copy(alpha = 0.22f))
+                .width(40.dp)
+                .height(4.dp)
+        )
+
+        Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+            repeat(6) {
+                val pair = getNumCombination(it)
+                val fee = calculateFeeCombination(pair, maleFee, femaleFee)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { copyOnClick(context, fee.toString()) }
+                        .padding(horizontal = 8.dp, vertical = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(
+                            R.string.common_num_fee_label,
+                            pair.first,
+                            pair.second
+                        ),
+                        modifier = Modifier.weight(1F),
+                        color = contentColor,
+                        fontSize = 16.sp
+                    )
+                    Text(
+                        text = "$fee",
+                        color = contentColor,
+                        fontSize = 21.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { copyOnClick(context, customFee.toString()) }
+                    .padding(horizontal = 8.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
+                LaunchedEffect(malePicker, femalePicker, absentPicker) {
+                    delay(100)
+                    customFee = calculateFeeCombinationWithAbsent(
+                        Pair(malePicker, maleFee),
+                        Pair(femalePicker, femaleFee),
+                        Pair(absentPicker, absentFee)
+                    )
+                }
 
-                    repeat(6) {
-                        val pair = getNumCombination(it)
-                        val fee = calculateFeeCombination(pair, maleFee, femaleFee)
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(start = 8.dp, end = 8.dp, top = 10.dp, bottom = 10.dp)
-                                .clickable { copyOnClick(context, fee.toString()) },
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = stringResource(
-                                    R.string.common_num_fee_label,
-                                    pair.first,
-                                    pair.second
-                                ),
-                                modifier = Modifier
-                                    .weight(1F)
-                                    .padding(start = 16.dp),
-                                fontSize = 16.sp
-                            )
-                            Text(
-                                text = "$fee",
-                                modifier = Modifier.padding(start = 0.dp, end = 16.dp),
-                                fontSize = 21.sp
-                            )
-                        }
-                    }
-
-                    Row(
+                Row(modifier = Modifier.weight(1F)) {
+                    NumberPicker(
+                        dividersColor = accent,
+                        value = malePicker,
+                        range = 0..10,
+                        onValueChange = { malePicker = it },
+                        textStyle = pickerText
+                    )
+                    Text(
+                        text = stringResource(id = R.string.man),
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(start = 8.dp, end = 8.dp)
-                            .clickable { copyOnClick(context, customFee.toString()) },
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        // 自动计算自定义男女时的费用
-                        LaunchedEffect(malePicker, femalePicker, absentPicker) {
-                            delay(100) // 等待其他状态变量的变化稳定下来
-                            customFee = calculateFeeCombinationWithAbsent(
-                                Pair(malePicker, maleFee),
-                                Pair(femalePicker, femaleFee),
-                                Pair(absentPicker, absentFee)
-                            )
-                        }
-
-                        Row(
-                            modifier = Modifier.weight(1F)
-                        ) {
-                            NumberPicker(
-                                dividersColor = MaterialTheme.colorScheme.primary,
-                                value = malePicker,
-                                range = 0..10,
-                                onValueChange = {
-                                    malePicker = it
-                                },
-                                textStyle = TextStyle(
-                                    fontSize = 16.sp,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                            )
-                            Text(
-                                text = stringResource(id = R.string.man),
-                                modifier = Modifier
-                                    .align(Alignment.CenterVertically)
-                                    .padding(start = 4.dp, end = 4.dp),
-                                fontSize = 16.sp
-                            )
-                            NumberPicker(
-                                dividersColor = MaterialTheme.colorScheme.primary,
-                                value = femalePicker,
-                                range = 0..10,
-                                onValueChange = {
-                                    femalePicker = it
-                                },
-                                textStyle = TextStyle(
-                                    fontSize = 16.sp,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                            )
-                            Text(
-                                text = stringResource(id = R.string.woman),
-                                modifier = Modifier
-                                    .align(Alignment.CenterVertically)
-                                    .padding(start = 4.dp, end = 4.dp),
-                                fontSize = 16.sp
-                            )
-                            if (absentFee > 0) {
-                                NumberPicker(
-                                    dividersColor = MaterialTheme.colorScheme.primary,
-                                    value = absentPicker,
-                                    range = 0..10,
-                                    onValueChange = {
-                                        absentPicker = it
-                                    },
-                                    textStyle = TextStyle(
-                                        fontSize = 16.sp,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
-                                )
-                                Text(
-                                    text = stringResource(id = R.string.absent),
-                                    modifier = Modifier
-                                        .align(Alignment.CenterVertically)
-                                        .padding(start = 4.dp, end = 4.dp),
-                                    fontSize = 16.sp
-                                )
-                            }
-                        }
+                            .align(Alignment.CenterVertically)
+                            .padding(horizontal = 4.dp),
+                        color = contentColor,
+                        fontSize = 16.sp
+                    )
+                    NumberPicker(
+                        dividersColor = accent,
+                        value = femalePicker,
+                        range = 0..10,
+                        onValueChange = { femalePicker = it },
+                        textStyle = pickerText
+                    )
+                    Text(
+                        text = stringResource(id = R.string.woman),
+                        modifier = Modifier
+                            .align(Alignment.CenterVertically)
+                            .padding(horizontal = 4.dp),
+                        color = contentColor,
+                        fontSize = 16.sp
+                    )
+                    if (absentFee > 0) {
+                        NumberPicker(
+                            dividersColor = accent,
+                            value = absentPicker,
+                            range = 0..10,
+                            onValueChange = { absentPicker = it },
+                            textStyle = pickerText
+                        )
                         Text(
-                            text = "$customFee",
-                            modifier = Modifier.padding(start = 0.dp, end = 16.dp),
-                            fontSize = 21.sp
+                            text = stringResource(id = R.string.absent),
+                            modifier = Modifier
+                                .align(Alignment.CenterVertically)
+                                .padding(horizontal = 4.dp),
+                            color = contentColor,
+                            fontSize = 16.sp
                         )
                     }
                 }
+                Text(
+                    text = "$customFee",
+                    color = contentColor,
+                    fontSize = 21.sp,
+                    fontWeight = FontWeight.Medium
+                )
             }
         }
     }
