@@ -14,9 +14,9 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -47,6 +47,8 @@ import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.supremesir.badmintonfeecalculator.ui.liquid.LiquidAtmosphere
 import com.supremesir.badmintonfeecalculator.ui.liquid.LiquidBottomSheet
 import com.supremesir.badmintonfeecalculator.ui.liquid.LiquidButton
+import com.supremesir.badmintonfeecalculator.ui.liquid.LiquidGlassChip
+import com.supremesir.badmintonfeecalculator.ui.liquid.LiquidInsetGroup
 import com.supremesir.badmintonfeecalculator.ui.liquid.LiquidPanel
 import com.supremesir.badmintonfeecalculator.ui.liquid.LiquidWheelPicker
 import kotlinx.coroutines.delay
@@ -318,42 +320,53 @@ fun ShowBottomSheetDialog(
         dimColor = dimColor,
         handleColor = contentColor.copy(alpha = 0.28f)
     ) {
-        Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-            repeat(6) {
-                val pair = getNumCombination(it)
-                val fee = calculateFeeCombination(pair, maleFee, femaleFee)
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { copyOnClick(context, fee.toString()) }
-                        .padding(horizontal = 8.dp, vertical = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = stringResource(
-                            R.string.common_num_fee_label,
-                            pair.first,
-                            pair.second
-                        ),
-                        modifier = Modifier.weight(1F),
-                        color = contentColor,
-                        fontSize = 16.sp
-                    )
-                    Text(
-                        text = "$fee",
-                        color = contentColor,
-                        fontSize = 21.sp,
-                        fontWeight = FontWeight.Medium
-                    )
+        val mutedLabel = contentColor.copy(alpha = 0.62f)
+        Column(
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            LiquidInsetGroup(backdrop = backdrop, surfaceColor = glassSurface) {
+                repeat(6) { index ->
+                    val pair = getNumCombination(index)
+                    val fee = calculateFeeCombination(pair, maleFee, femaleFee)
+                    if (index > 0) {
+                        HorizontalDivider(
+                            modifier = Modifier.padding(start = 16.dp, end = 12.dp),
+                            thickness = 0.5.dp,
+                            color = contentColor.copy(alpha = 0.08f)
+                        )
+                    }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { copyOnClick(context, fee.toString()) }
+                            .padding(start = 16.dp, end = 10.dp, top = 8.dp, bottom = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = stringResource(
+                                R.string.common_num_fee_label,
+                                pair.first,
+                                pair.second
+                            ),
+                            modifier = Modifier.weight(1F),
+                            color = mutedLabel,
+                            fontSize = 16.sp
+                        )
+                        LiquidGlassChip(
+                            text = "$fee",
+                            backdrop = backdrop,
+                            textColor = contentColor,
+                            surfaceColor = glassSurface,
+                            onClick = { copyOnClick(context, fee.toString()) }
+                        )
+                    }
                 }
             }
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            LiquidInsetGroup(backdrop = backdrop, surfaceColor = glassSurface) {
                 LaunchedEffect(malePicker, femalePicker, absentPicker) {
                     delay(100)
                     customFee = calculateFeeCombinationWithAbsent(
@@ -364,66 +377,88 @@ fun ShowBottomSheetDialog(
                 }
 
                 Row(
-                    modifier = Modifier.weight(1F),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 12.dp, end = 10.dp, top = 8.dp, bottom = 10.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    LiquidWheelPicker(
-                        value = malePicker,
-                        range = 0..10,
-                        onValueChange = { malePicker = it },
-                        backdrop = backdrop,
-                        textColor = contentColor,
-                        modifier = Modifier.width(64.dp),
-                        surfaceColor = glassSurface
-                    )
-                    Text(
-                        text = stringResource(id = R.string.man),
-                        modifier = Modifier.padding(end = 6.dp),
-                        color = contentColor,
-                        fontSize = 16.sp
-                    )
-                    LiquidWheelPicker(
-                        value = femalePicker,
-                        range = 0..10,
-                        onValueChange = { femalePicker = it },
-                        backdrop = backdrop,
-                        textColor = contentColor,
-                        modifier = Modifier.width(64.dp),
-                        surfaceColor = glassSurface
-                    )
-                    Text(
-                        text = stringResource(id = R.string.woman),
-                        modifier = Modifier.padding(end = 6.dp),
-                        color = contentColor,
-                        fontSize = 16.sp
-                    )
-                    if (absentFee > 0) {
-                        LiquidWheelPicker(
-                            value = absentPicker,
-                            range = 0..10,
-                            onValueChange = { absentPicker = it },
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        WheelField(
+                            value = malePicker,
+                            onValueChange = { malePicker = it },
+                            label = stringResource(id = R.string.man),
                             backdrop = backdrop,
                             textColor = contentColor,
-                            modifier = Modifier.width(64.dp),
+                            labelColor = mutedLabel,
                             surfaceColor = glassSurface
                         )
-                        Text(
-                            text = stringResource(id = R.string.absent),
-                            modifier = Modifier.padding(end = 4.dp),
-                            color = contentColor,
-                            fontSize = 16.sp
+                        WheelField(
+                            value = femalePicker,
+                            onValueChange = { femalePicker = it },
+                            label = stringResource(id = R.string.woman),
+                            backdrop = backdrop,
+                            textColor = contentColor,
+                            labelColor = mutedLabel,
+                            surfaceColor = glassSurface
                         )
+                        if (absentFee > 0) {
+                            WheelField(
+                                value = absentPicker,
+                                onValueChange = { absentPicker = it },
+                                label = stringResource(id = R.string.absent),
+                                backdrop = backdrop,
+                                textColor = contentColor,
+                                labelColor = mutedLabel,
+                                surfaceColor = glassSurface
+                            )
+                        }
                     }
+                    LiquidGlassChip(
+                        text = "$customFee",
+                        backdrop = backdrop,
+                        textColor = contentColor,
+                        surfaceColor = glassSurface,
+                        onClick = { copyOnClick(context, customFee.toString()) }
+                    )
                 }
-                Text(
-                    text = "$customFee",
-                    modifier = Modifier.clickable { copyOnClick(context, customFee.toString()) },
-                    color = contentColor,
-                    fontSize = 21.sp,
-                    fontWeight = FontWeight.Medium
-                )
             }
         }
+    }
+}
+
+@Composable
+private fun WheelField(
+    value: Int,
+    onValueChange: (Int) -> Unit,
+    label: String,
+    backdrop: Backdrop,
+    textColor: Color,
+    labelColor: Color,
+    surfaceColor: Color
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        LiquidWheelPicker(
+            value = value,
+            range = 0..10,
+            onValueChange = onValueChange,
+            backdrop = backdrop,
+            textColor = textColor,
+            surfaceColor = surfaceColor
+        )
+        Text(
+            text = label,
+            color = labelColor,
+            fontSize = 16.sp,
+            maxLines = 1,
+            softWrap = false
+        )
     }
 }
 

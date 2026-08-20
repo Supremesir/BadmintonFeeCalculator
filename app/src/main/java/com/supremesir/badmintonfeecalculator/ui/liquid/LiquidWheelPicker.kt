@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -90,6 +91,7 @@ fun LiquidWheelPicker(
     }
 
     LaunchedEffect(value, values) {
+        if (listState.isScrollInProgress) return@LaunchedEffect
         val target = (value - range.first).coerceIn(0, values.lastIndex)
         if (selectedValue != value) {
             listState.animateScrollToItem(target)
@@ -98,6 +100,7 @@ fun LiquidWheelPicker(
 
     Box(
         modifier
+            .width(44.dp)
             .height(itemHeight * visibleCount)
             .clipToBounds()
     ) {
@@ -122,8 +125,7 @@ fun LiquidWheelPicker(
         LazyColumn(
             modifier = Modifier.fillMaxWidth(),
             state = listState,
-            flingBehavior = flingBehavior,
-            horizontalAlignment = Alignment.CenterHorizontally
+            flingBehavior = flingBehavior
         ) {
             items(
                 count = values.size + paddingCount * 2,
@@ -156,6 +158,7 @@ fun LiquidWheelPicker(
                     if (number != null) {
                         Text(
                             text = number.toString(),
+                            modifier = Modifier.fillMaxWidth(),
                             color = textColor,
                             fontSize = 22.sp,
                             fontWeight = if (absDistance < 0.5f) FontWeight.SemiBold else FontWeight.Normal,
