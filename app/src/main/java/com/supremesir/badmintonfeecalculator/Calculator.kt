@@ -172,26 +172,40 @@ fun CalculatorScreen(
                 )
             }
 
-            LiquidPanel(backdrop = backdrop, surfaceColor = glassSurface) {
+            LiquidInsetGroup(backdrop = backdrop, surfaceColor = glassSurface) {
                 FeeRow(
                     label = resources.getString(R.string.male_fee_label),
                     value = maleCost,
                     contentColor = contentColor,
+                    backdrop = backdrop,
+                    glassSurface = glassSurface,
                     onClick = { copyOnClick(context, maleCost.toString()) }
                 )
-                Spacer(Modifier.height(12.dp))
+                HorizontalDivider(
+                    modifier = Modifier.padding(start = 16.dp, end = 12.dp),
+                    thickness = 0.5.dp,
+                    color = contentColor.copy(alpha = 0.08f)
+                )
                 FeeRow(
                     label = resources.getString(R.string.female_fee_label),
                     value = femaleCost,
                     contentColor = contentColor,
+                    backdrop = backdrop,
+                    glassSurface = glassSurface,
                     onClick = { copyOnClick(context, femaleCost.toString()) }
                 )
                 if (absentCount.safeToInt() > 0) {
-                    Spacer(Modifier.height(12.dp))
+                    HorizontalDivider(
+                        modifier = Modifier.padding(start = 16.dp, end = 12.dp),
+                        thickness = 0.5.dp,
+                        color = contentColor.copy(alpha = 0.08f)
+                    )
                     FeeRow(
                         label = resources.getString(R.string.absent_fee_label),
                         value = absentCost,
                         contentColor = contentColor,
+                        backdrop = backdrop,
+                        glassSurface = glassSurface,
                         onClick = { copyOnClick(context, absentCost.toString()) }
                     )
                 }
@@ -276,21 +290,29 @@ private fun FeeRow(
     label: String,
     value: Double,
     contentColor: Color,
+    backdrop: Backdrop,
+    glassSurface: Color,
     onClick: () -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+            .clickable(onClick = onClick)
+            .padding(start = 16.dp, end = 10.dp, top = 8.dp, bottom = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(text = label, color = contentColor.copy(alpha = 0.72f), fontSize = 16.sp)
         Text(
+            text = label,
+            modifier = Modifier.weight(1f),
+            color = contentColor.copy(alpha = 0.62f),
+            fontSize = 16.sp
+        )
+        LiquidGlassChip(
             text = "$value",
-            color = contentColor,
-            fontSize = 26.sp,
-            fontWeight = FontWeight.Medium
+            backdrop = backdrop,
+            textColor = contentColor,
+            surfaceColor = glassSurface,
+            onClick = onClick
         )
     }
 }
