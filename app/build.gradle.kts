@@ -48,6 +48,7 @@ dependencies {
 
     implementation(libs.number.picker)
     implementation(libs.bottomsheet.dialog)
+    implementation(libs.backdrop)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

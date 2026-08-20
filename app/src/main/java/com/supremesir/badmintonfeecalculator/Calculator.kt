@@ -13,12 +13,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
@@ -53,6 +51,9 @@ import androidx.window.core.layout.WindowWidthSizeClass
 import com.chargemap.compose.numberpicker.NumberPicker
 import com.holix.android.bottomsheetdialog.compose.BottomSheetDialog
 import com.holix.android.bottomsheetdialog.compose.BottomSheetDialogProperties
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import com.supremesir.badmintonfeecalculator.ui.liquid.LiquidButton
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -73,6 +74,11 @@ fun CalculatorScreen(
 
     val context = LocalContext.current
     val resources = context.resources
+    val backgroundColor = MaterialTheme.colorScheme.background
+    val backdrop = rememberLayerBackdrop {
+        drawRect(backgroundColor)
+        drawContent()
+    }
 
     Scaffold(
         topBar = {
@@ -86,7 +92,7 @@ fun CalculatorScreen(
         },
         // 计算按钮
         floatingActionButton = {
-            ExtendedFloatingActionButton(
+            LiquidButton(
                 onClick = {
                     calculateStringWithAbsent(
                         courtFee,
@@ -101,15 +107,20 @@ fun CalculatorScreen(
                         absentCost = this.absentFee
                     }
                 },
-                icon = {
-                    Icon(
-                        painter = painterResource(R.drawable.calculation),
-                        contentDescription = resources.getString(R.string.calculate),
-                        modifier = Modifier.size(40.dp)
-                    )
-                },
-                text = { Text(text = resources.getString(R.string.calculate)) },
-            )
+                backdrop = backdrop,
+                tint = MaterialTheme.colorScheme.primary,
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.calculation),
+                    contentDescription = resources.getString(R.string.calculate),
+                    modifier = Modifier.size(24.dp),
+                    tint = MaterialTheme.colorScheme.onPrimary
+                )
+                Text(
+                    text = resources.getString(R.string.calculate),
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+            }
         }
     ) { innerPadding ->
         Column(
@@ -119,6 +130,12 @@ fun CalculatorScreen(
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .layerBackdrop(backdrop),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
             // 内容输入区
             Spacer(modifier = Modifier.height(12.dp))
             Row(
@@ -253,11 +270,16 @@ fun CalculatorScreen(
 
                 }
             }
-            Spacer(modifier = Modifier.height(12.dp))
-            Button(onClick = { showDialog.value = true }) {
-                Text(resources.getString(R.string.other_fee_label))
-                ShowBottomSheetDialog(showDialog, maleCost, femaleCost, absentCost)
             }
+            Spacer(modifier = Modifier.height(12.dp))
+            LiquidButton(
+                onClick = { showDialog.value = true },
+                backdrop = backdrop,
+                surfaceColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.35f),
+            ) {
+                Text(resources.getString(R.string.other_fee_label))
+            }
+            ShowBottomSheetDialog(showDialog, maleCost, femaleCost, absentCost)
         }
     }
 }
