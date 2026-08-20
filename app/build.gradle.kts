@@ -1,16 +1,16 @@
 plugins {
     alias(libs.plugins.androidApplication)
-    alias(libs.plugins.jetbrainsKotlinAndroid)
+    alias(libs.plugins.compose.compiler)
 }
 
 android {
     namespace = "com.supremesir.badmintonfeecalculator"
-    compileSdk = 34
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.supremesir.badmintonfeecalculator"
         minSdk = 28
-        targetSdk = 34
+        targetSdk = 36
         versionCode = 7
         versionName = "2.1"
 
@@ -31,17 +31,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-    kotlinOptions {
-        jvmTarget = "1.8"
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     buildFeatures {
         compose = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
     }
     packaging {
         resources {
