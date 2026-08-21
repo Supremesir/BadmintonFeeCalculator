@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -37,12 +36,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import com.kyant.backdrop.Backdrop
@@ -53,7 +52,6 @@ import com.kyant.backdrop.effects.vibrancy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import kotlin.math.roundToInt
 
 @Composable
 fun LiquidBottomSheet(
@@ -71,55 +69,40 @@ fun LiquidBottomSheet(
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current
     val dismissHandler by rememberUpdatedState(onDismiss)
-    var sheetHeightPx by remember { mutableFloatStateOf(0f) }
-    var offsetY by remember { mutableFloatStateOf(with(density) { 640.dp.toPx() }) }
-    var scrimProgress by remember { mutableFloatStateOf(0f) }
-    var animationJob by remember { mutableStateOf<Job?>(null) }
+    val offsetY = remember { mutableFloatStateOf(with(density) { 640.dp.toPx() }) }
+    val sheetHeightPx = remember { mutableFloatStateOf(0f) }
+    val animationJob = remember { mutableStateOf<Job?>(null) }
     var closingInternally by remember { mutableStateOf(false) }
 
     fun runAnimation(block: suspend CoroutineScope.() -> Unit) {
-        animationJob?.cancel()
-        animationJob = scope.launch(block = block)
+        animationJob.value?.cancel()
+        animationJob.value = scope.launch(block = block)
     }
 
     fun animateIn(height: Float) {
         if (height <= 0f) return
         runAnimation {
-            offsetY = height
-            launch {
-                animate(
-                    initialValue = scrimProgress,
-                    targetValue = 1f,
-                    animationSpec = tween(280)
-                ) { value, _ -> scrimProgress = value }
-            }
+            offsetY.floatValue = height
             animate(
                 initialValue = height,
                 targetValue = 0f,
                 animationSpec = spring(
-                    dampingRatio = 0.86f,
-                    stiffness = Spring.StiffnessMediumLow
+                    dampingRatio = 0.92f,
+                    stiffness = Spring.StiffnessMedium
                 )
-            ) { value, _ -> offsetY = value }
+            ) { value, _ -> offsetY.floatValue = value }
         }
     }
 
     fun animateOut(notifyDismiss: Boolean) {
         closingInternally = true
-        val target = sheetHeightPx.coerceAtLeast(offsetY)
+        val target = sheetHeightPx.floatValue.coerceAtLeast(offsetY.floatValue)
         runAnimation {
-            launch {
-                animate(
-                    initialValue = scrimProgress,
-                    targetValue = 0f,
-                    animationSpec = tween(220)
-                ) { value, _ -> scrimProgress = value }
-            }
             animate(
-                initialValue = offsetY,
+                initialValue = offsetY.floatValue,
                 targetValue = target,
-                animationSpec = tween(280, easing = FastOutLinearInEasing)
-            ) { value, _ -> offsetY = value }
+                animationSpec = tween(220, easing = FastOutLinearInEasing)
+            ) { value, _ -> offsetY.floatValue = value }
             displayed = false
             closingInternally = false
             if (notifyDismiss) dismissHandler()
@@ -127,36 +110,31 @@ fun LiquidBottomSheet(
     }
 
     fun settle(velocity: Float) {
-        val height = sheetHeightPx.coerceAtLeast(1f)
-        val shouldDismiss = offsetY > height * 0.22f || velocity > 1800f
+        val height = sheetHeightPx.floatValue.coerceAtLeast(1f)
+        val shouldDismiss = offsetY.floatValue > height * 0.18f || velocity > 1400f
         if (shouldDismiss) {
             animateOut(notifyDismiss = true)
         } else {
             runAnimation {
-                launch {
-                    animate(
-                        initialValue = scrimProgress,
-                        targetValue = 1f,
-                        animationSpec = tween(180)
-                    ) { value, _ -> scrimProgress = value }
-                }
                 animate(
-                    initialValue = offsetY,
+                    initialValue = offsetY.floatValue,
                     targetValue = 0f,
                     animationSpec = spring(
-                        dampingRatio = 0.85f,
+                        dampingRatio = 0.9f,
                         stiffness = Spring.StiffnessMedium
                     )
-                ) { value, _ -> offsetY = value }
+                ) { value, _ -> offsetY.floatValue = value }
             }
         }
     }
+
+    val settleState = rememberUpdatedState(::settle)
 
     LaunchedEffect(visible) {
         if (visible) {
             closingInternally = false
             displayed = true
-            if (sheetHeightPx > 0f) animateIn(sheetHeightPx)
+            if (sheetHeightPx.floatValue > 0f) animateIn(sheetHeightPx.floatValue)
         } else if (displayed && !closingInternally) {
             animateOut(notifyDismiss = false)
         }
@@ -165,46 +143,39 @@ fun LiquidBottomSheet(
     BackHandler(enabled = visible) { dismissHandler() }
 
     val dragState = rememberDraggableState { delta ->
-        animationJob?.cancel()
-        offsetY = (offsetY + delta).coerceAtLeast(0f)
-        if (sheetHeightPx > 0f) {
-            scrimProgress = (1f - offsetY / sheetHeightPx).coerceIn(0f, 1f)
-        }
+        animationJob.value?.cancel()
+        offsetY.floatValue = (offsetY.floatValue + delta).coerceAtLeast(0f)
     }
 
-    val nestedScrollConnection = object : NestedScrollConnection {
-        override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-            if (available.y < 0f && offsetY > 0f) {
-                animationJob?.cancel()
-                val consumed = maxOf(available.y, -offsetY)
-                offsetY += consumed
-                if (sheetHeightPx > 0f) {
-                    scrimProgress = (1f - offsetY / sheetHeightPx).coerceIn(0f, 1f)
+    val nestedScrollConnection = remember(offsetY, sheetHeightPx, animationJob) {
+        object : NestedScrollConnection {
+            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                if (available.y < 0f && offsetY.floatValue > 0f) {
+                    animationJob.value?.cancel()
+                    val consumed = maxOf(available.y, -offsetY.floatValue)
+                    offsetY.floatValue += consumed
+                    return Offset(0f, consumed)
                 }
-                return Offset(0f, consumed)
+                return Offset.Zero
             }
-            return Offset.Zero
-        }
 
-        override fun onPostScroll(
-            consumed: Offset,
-            available: Offset,
-            source: NestedScrollSource
-        ): Offset {
-            if (available.y > 0f) {
-                animationJob?.cancel()
-                offsetY += available.y
-                if (sheetHeightPx > 0f) {
-                    scrimProgress = (1f - offsetY / sheetHeightPx).coerceIn(0f, 1f)
+            override fun onPostScroll(
+                consumed: Offset,
+                available: Offset,
+                source: NestedScrollSource
+            ): Offset {
+                if (available.y > 0f) {
+                    animationJob.value?.cancel()
+                    offsetY.floatValue += available.y
+                    return Offset(0f, available.y)
                 }
-                return Offset(0f, available.y)
+                return Offset.Zero
             }
-            return Offset.Zero
-        }
 
-        override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
-            settle(available.y)
-            return available
+            override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
+                settleState.value(available.y)
+                return available
+            }
         }
     }
 
@@ -212,7 +183,15 @@ fun LiquidBottomSheet(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(dimColor.copy(alpha = dimColor.alpha * scrimProgress))
+                .graphicsLayer {
+                    val height = sheetHeightPx.floatValue
+                    alpha = if (height > 0f) {
+                        (1f - offsetY.floatValue / height).coerceIn(0f, 1f)
+                    } else {
+                        0f
+                    }
+                }
+                .background(dimColor)
                 .clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
@@ -227,11 +206,11 @@ fun LiquidBottomSheet(
                 .padding(start = 12.dp, end = 12.dp, bottom = 12.dp)
                 .onSizeChanged { size ->
                     val measured = size.height.toFloat()
-                    val firstMeasure = sheetHeightPx == 0f
-                    sheetHeightPx = measured
+                    val firstMeasure = sheetHeightPx.floatValue == 0f
+                    sheetHeightPx.floatValue = measured
                     if (visible && firstMeasure) animateIn(measured)
                 }
-                .offset { IntOffset(0, offsetY.roundToInt()) }
+                .graphicsLayer { translationY = offsetY.floatValue }
                 .nestedScroll(nestedScrollConnection)
                 .drawBackdrop(
                     backdrop = backdrop,
