@@ -1,5 +1,7 @@
 package com.supremesir.badmintonfeecalculator
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
@@ -75,6 +77,7 @@ fun CalculatorScreen(
     var maleCost by remember { mutableDoubleStateOf(0.0) }
     var femaleCost by remember { mutableDoubleStateOf(0.0) }
     var absentCost by remember { mutableDoubleStateOf(0.0) }
+    var lastCalculatedInputs by remember { mutableStateOf<CalculationInputs?>(null) }
     val showDialog = remember { mutableStateOf(false) }
 
     val context = LocalContext.current
@@ -84,6 +87,21 @@ fun CalculatorScreen(
     val mutedColor = contentColor.copy(alpha = 0.62f)
     val glassSurface = if (darkTheme) Color.White.copy(alpha = 0.10f) else Color.White.copy(alpha = 0.20f)
     val accent = Color(0xFF0088FF)
+    val staleAccent = Color(0xFFFF3B30)
+    val currentInputs = CalculationInputs(
+        courtFee = courtFee.safeToDouble(),
+        badmintonFee = badmintonFee.safeToDouble(),
+        extraMaleFee = extraMaleFee.safeToDouble(),
+        maleCount = maleCount,
+        femaleCount = femaleCount,
+        absentCount = absentCount
+    )
+    val needsRecalculate = lastCalculatedInputs != null && lastCalculatedInputs != currentInputs
+    val calculateTint by animateColorAsState(
+        targetValue = if (needsRecalculate) staleAccent else accent,
+        animationSpec = tween(durationMillis = 220),
+        label = "calculateTint"
+    )
     val backdrop = rememberLayerBackdrop()
     val focusManager = LocalFocusManager.current
     val extraFeeRowBoundsState = rememberUpdatedState(extraFeeRowBounds)
@@ -284,6 +302,7 @@ fun CalculatorScreen(
                 }
                 LiquidButton(
                     onClick = {
+                        lastCalculatedInputs = currentInputs
                         calculateStringWithAbsent(
                             courtFee,
                             badmintonFee,
@@ -299,7 +318,7 @@ fun CalculatorScreen(
                     },
                     backdrop = backdrop,
                     modifier = Modifier.weight(0.88f),
-                    tint = accent
+                    tint = calculateTint
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.calculation),
@@ -525,6 +544,15 @@ private fun WheelField(
     }
 }
 
+
+private data class CalculationInputs(
+    val courtFee: Double,
+    val badmintonFee: Double,
+    val extraMaleFee: Double,
+    val maleCount: Int,
+    val femaleCount: Int,
+    val absentCount: Int
+)
 
 fun calculateString(
     courtFee: String,
