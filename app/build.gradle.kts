@@ -11,8 +11,8 @@ android {
         applicationId = "com.supremesir.badmintonfeecalculator"
         minSdk = 28
         targetSdk = 36
-        versionCode = 9
-        versionName = "3.1"
+        versionCode = 10
+        versionName = "3.5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
