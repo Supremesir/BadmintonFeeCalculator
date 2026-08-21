@@ -1,8 +1,10 @@
 package com.supremesir.badmintonfeecalculator.ui.liquid
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -47,7 +49,6 @@ import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.drawBackdrop
 import com.kyant.backdrop.effects.blur
 import com.kyant.backdrop.effects.lens
-import com.kyant.backdrop.effects.vibrancy
 import com.kyant.backdrop.highlight.Highlight
 import com.kyant.backdrop.shadow.InnerShadow
 
@@ -65,13 +66,14 @@ fun LiquidInputTile(
     keyboardType: KeyboardType = KeyboardType.Decimal
 ) {
     val focusRequester = remember { FocusRequester() }
+    val isLightTheme = !isSystemInDarkTheme()
     Column(
         modifier
             .drawBackdrop(
                 backdrop = backdrop,
                 shape = { RoundedCornerShape(28.dp) },
                 effects = {
-                    vibrancy()
+                    liquidColorControls(isLightTheme)
                     blur(4f.dp.toPx())
                     lens(16f.dp.toPx(), 32f.dp.toPx(), depthEffect = true)
                 },
@@ -81,7 +83,7 @@ fun LiquidInputTile(
             )
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = null
+                indication = LocalIndication.current
             ) { focusRequester.requestFocus() }
             .padding(horizontal = 8.dp, vertical = 14.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -149,6 +151,7 @@ fun LiquidTapToEditRow(
     val focusManager = LocalFocusManager.current
     val keyboard = LocalSoftwareKeyboardController.current
     val imeVisible = WindowInsets.isImeVisible
+    val isLightTheme = !isSystemInDarkTheme()
 
     fun finishEditing() {
         if (!editing) return
@@ -189,7 +192,7 @@ fun LiquidTapToEditRow(
             .onGloballyPositioned { onBoundsInWindow(it.boundsInWindow()) }
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
-                indication = null
+                indication = LocalIndication.current
             ) { onEditingChange(true) }
             .padding(start = 16.dp, end = 12.dp, top = 8.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -213,7 +216,7 @@ fun LiquidTapToEditRow(
                         backdrop = backdrop,
                         shape = { RoundedCornerShape(12.dp) },
                         effects = {
-                            vibrancy()
+                            liquidColorControls(isLightTheme)
                             blur(4f.dp.toPx())
                             lens(8f.dp.toPx(), 16f.dp.toPx())
                         },

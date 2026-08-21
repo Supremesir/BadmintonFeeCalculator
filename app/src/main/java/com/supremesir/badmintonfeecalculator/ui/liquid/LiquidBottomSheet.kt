@@ -12,6 +12,7 @@ import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -48,7 +49,6 @@ import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.drawBackdrop
 import com.kyant.backdrop.effects.blur
 import com.kyant.backdrop.effects.lens
-import com.kyant.backdrop.effects.vibrancy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -68,6 +68,7 @@ fun LiquidBottomSheet(
 
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current
+    val isLightTheme = !isSystemInDarkTheme()
     val dismissHandler by rememberUpdatedState(onDismiss)
     val offsetY = remember { mutableFloatStateOf(with(density) { 640.dp.toPx() }) }
     val sheetHeightPx = remember { mutableFloatStateOf(0f) }
@@ -216,7 +217,7 @@ fun LiquidBottomSheet(
                     backdrop = backdrop,
                     shape = { RoundedCornerShape(36.dp) },
                     effects = {
-                        vibrancy()
+                        liquidColorControls(isLightTheme)
                         blur(8f.dp.toPx())
                         lens(24f.dp.toPx(), 48f.dp.toPx(), true)
                     },

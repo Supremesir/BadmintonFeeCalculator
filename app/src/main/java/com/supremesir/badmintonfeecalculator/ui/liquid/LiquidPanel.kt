@@ -1,6 +1,7 @@
 package com.supremesir.badmintonfeecalculator.ui.liquid
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,7 +15,6 @@ import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.drawBackdrop
 import com.kyant.backdrop.effects.blur
 import com.kyant.backdrop.effects.lens
-import com.kyant.backdrop.effects.vibrancy
 
 @Composable
 fun LiquidPanel(
@@ -24,13 +24,14 @@ fun LiquidPanel(
     onClick: (() -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    val isLightTheme = !isSystemInDarkTheme()
     Column(
         modifier
             .drawBackdrop(
                 backdrop = backdrop,
                 shape = { RoundedCornerShape(28.dp) },
                 effects = {
-                    vibrancy()
+                    liquidColorControls(isLightTheme)
                     blur(8f.dp.toPx())
                     lens(16f.dp.toPx(), 32f.dp.toPx())
                 },

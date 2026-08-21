@@ -3,6 +3,7 @@ package com.supremesir.badmintonfeecalculator.ui.liquid
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -40,7 +41,6 @@ import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.drawBackdrop
 import com.kyant.backdrop.effects.blur
 import com.kyant.backdrop.effects.lens
-import com.kyant.backdrop.effects.vibrancy
 import com.kyant.backdrop.highlight.Highlight
 import com.kyant.backdrop.shadow.InnerShadow
 import com.kyant.backdrop.shadow.Shadow
@@ -69,6 +69,7 @@ fun LiquidWheelPicker(
     val flingBehavior = rememberSnapFlingBehavior(lazyListState = listState)
     val haptic = LocalHapticFeedback.current
     val density = LocalDensity.current
+    val isLightTheme = !isSystemInDarkTheme()
     val itemHeightPx = with(density) { itemHeight.toPx() }
     val cameraDistancePx = with(density) { 52.dp.toPx() }
     val scrollGlow by animateFloatAsState(
@@ -129,7 +130,7 @@ fun LiquidWheelPicker(
                     backdrop = backdrop,
                     shape = { RoundedCornerShape(12.dp) },
                     effects = {
-                        vibrancy()
+                        liquidColorControls(isLightTheme)
                         blur((4f + 2f * scrollGlow).dp.toPx())
                         lens(
                             (8f + 8f * scrollGlow).dp.toPx(),

@@ -85,7 +85,7 @@ fun CalculatorScreen(
     val darkTheme = isSystemInDarkTheme()
     val contentColor = if (darkTheme) Color.White else Color(0xFF1B1B1F)
     val mutedColor = contentColor.copy(alpha = 0.62f)
-    val glassSurface = if (darkTheme) Color.White.copy(alpha = 0.10f) else Color.White.copy(alpha = 0.20f)
+    val glassSurface = if (darkTheme) Color.White.copy(alpha = 0.10f) else Color.White.copy(alpha = 0.12f)
     val accent = Color(0xFF0088FF)
     val staleAccent = Color(0xFFFF3B30)
     val currentInputs = CalculationInputs(

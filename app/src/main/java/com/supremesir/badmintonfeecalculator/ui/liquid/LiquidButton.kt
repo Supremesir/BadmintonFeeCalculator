@@ -1,6 +1,9 @@
 package com.supremesir.badmintonfeecalculator.ui.liquid
 
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -24,7 +27,6 @@ import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.drawBackdrop
 import com.kyant.backdrop.effects.blur
 import com.kyant.backdrop.effects.lens
-import com.kyant.backdrop.effects.vibrancy
 import com.kyant.backdrop.highlight.Highlight
 import com.kyant.backdrop.shadow.InnerShadow
 import com.kyant.backdrop.shadow.Shadow
@@ -44,6 +46,8 @@ fun LiquidButton(
     content: @Composable RowScope.() -> Unit
 ) {
     val animationScope = rememberCoroutineScope()
+    val isLightTheme = !isSystemInDarkTheme()
+    val interactionSource = remember { MutableInteractionSource() }
     val interactiveHighlight = remember(animationScope) {
         InteractiveHighlight(animationScope = animationScope)
     }
@@ -55,7 +59,7 @@ fun LiquidButton(
                 shape = { RoundedCornerShape(50) },
                 effects = {
                     val progress = interactiveHighlight.pressProgress
-                    vibrancy()
+                    liquidColorControls(isLightTheme)
                     blur(2f.dp.toPx())
                     lens(
                         (12f + 10f * progress).dp.toPx(),
@@ -110,8 +114,8 @@ fun LiquidButton(
                 }
             )
             .clickable(
-                interactionSource = null,
-                indication = null,
+                interactionSource = interactionSource,
+                indication = LocalIndication.current,
                 role = Role.Button,
                 onClick = onClick
             )

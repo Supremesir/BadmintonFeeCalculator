@@ -1,6 +1,9 @@
 package com.supremesir.badmintonfeecalculator.ui.liquid
 
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -21,7 +24,6 @@ import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.drawBackdrop
 import com.kyant.backdrop.effects.blur
 import com.kyant.backdrop.effects.lens
-import com.kyant.backdrop.effects.vibrancy
 import com.kyant.backdrop.highlight.Highlight
 import com.kyant.backdrop.shadow.InnerShadow
 import com.kyant.backdrop.shadow.Shadow
@@ -43,6 +45,8 @@ fun LiquidResultTile(
     onClick: () -> Unit
 ) {
     val animationScope = rememberCoroutineScope()
+    val isLightTheme = !isSystemInDarkTheme()
+    val interactionSource = remember { MutableInteractionSource() }
     val interactiveHighlight = remember(animationScope) {
         InteractiveHighlight(animationScope = animationScope)
     }
@@ -54,7 +58,7 @@ fun LiquidResultTile(
                 shape = { RoundedCornerShape(28.dp) },
                 effects = {
                     val progress = interactiveHighlight.pressProgress
-                    vibrancy()
+                    liquidColorControls(isLightTheme)
                     blur(4f.dp.toPx())
                     lens(
                         (16f + 8f * progress).dp.toPx(),
@@ -100,8 +104,8 @@ fun LiquidResultTile(
                 onDrawSurface = { drawRect(surfaceColor) }
             )
             .clickable(
-                interactionSource = null,
-                indication = null,
+                interactionSource = interactionSource,
+                indication = LocalIndication.current,
                 role = Role.Button,
                 onClick = onClick
             )

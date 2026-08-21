@@ -1,6 +1,7 @@
 package com.supremesir.badmintonfeecalculator.ui.liquid
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -21,7 +22,6 @@ import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.drawBackdrop
 import com.kyant.backdrop.effects.blur
 import com.kyant.backdrop.effects.lens
-import com.kyant.backdrop.effects.vibrancy
 
 @Composable
 fun LiquidInsetGroup(
@@ -30,13 +30,14 @@ fun LiquidInsetGroup(
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    val isLightTheme = !isSystemInDarkTheme()
     Column(
         modifier
             .drawBackdrop(
                 backdrop = backdrop,
                 shape = { RoundedCornerShape(22.dp) },
                 effects = {
-                    vibrancy()
+                    liquidColorControls(isLightTheme)
                     blur(5f.dp.toPx())
                     lens(10f.dp.toPx(), 20f.dp.toPx())
                 },
@@ -57,6 +58,7 @@ fun LiquidGlassChip(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null
 ) {
+    val isLightTheme = !isSystemInDarkTheme()
     Box(
         modifier
             .widthIn(min = 72.dp)
@@ -64,7 +66,7 @@ fun LiquidGlassChip(
                 backdrop = backdrop,
                 shape = { RoundedCornerShape(12.dp) },
                 effects = {
-                    vibrancy()
+                    liquidColorControls(isLightTheme)
                     blur(4f.dp.toPx())
                     lens(8f.dp.toPx(), 16f.dp.toPx())
                 },
