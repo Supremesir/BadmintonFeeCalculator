@@ -58,6 +58,7 @@ import com.supremesir.badmintonfeecalculator.ui.liquid.LiquidInsetGroup
 import com.supremesir.badmintonfeecalculator.ui.liquid.LiquidResultTile
 import com.supremesir.badmintonfeecalculator.ui.liquid.LiquidTapToEditRow
 import com.supremesir.badmintonfeecalculator.ui.liquid.LiquidWheelPicker
+import com.supremesir.badmintonfeecalculator.ui.liquid.ShuttlecockFeeSheet
 import com.supremesir.badmintonfeecalculator.ui.theme.LiquidType
 import kotlinx.coroutines.delay
 
@@ -78,6 +79,8 @@ fun CalculatorScreen(
     var absentCost by remember { mutableDoubleStateOf(0.0) }
     var lastCalculatedInputs by remember { mutableStateOf<CalculationInputs?>(null) }
     val showDialog = remember { mutableStateOf(false) }
+    var showShuttlecockSheet by remember { mutableStateOf(false) }
+    var shuttlecockDetailMode by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     val resources = context.resources
@@ -85,6 +88,7 @@ fun CalculatorScreen(
     val contentColor = if (darkTheme) Color.White else Color(0xFF1B1B1F)
     val mutedColor = contentColor.copy(alpha = 0.72f)
     val glassSurface = if (darkTheme) Color.White.copy(alpha = 0.10f) else Color.White.copy(alpha = 0.12f)
+    val dimColor = if (darkTheme) Color(0xFF121212).copy(alpha = 0.45f) else Color(0xFF29293A).copy(alpha = 0.22f)
     val accent = Color(0xFF0088FF)
     val staleAccent = Color(0xFFFF3B30)
     val currentInputs = CalculationInputs(
@@ -106,6 +110,13 @@ fun CalculatorScreen(
     val extraFeeRowBoundsState = rememberUpdatedState(extraFeeRowBounds)
     val extraFeeEditingState = rememberUpdatedState(extraFeeEditing)
     var rootCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
+
+    fun openShuttlecockSheet() {
+        extraFeeEditing = false
+        focusManager.clearFocus(force = true)
+        showDialog.value = false
+        showShuttlecockSheet = true
+    }
 
     Box(
         Modifier
@@ -180,7 +191,11 @@ fun CalculatorScreen(
                         mutedColor = mutedColor,
                         surfaceColor = glassSurface,
                         accent = accent,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        readOnly = shuttlecockDetailMode,
+                        onReadOnlyClick = { openShuttlecockSheet() },
+                        onAccessoryClick = { openShuttlecockSheet() },
+                        accessoryActive = shuttlecockDetailMode
                     )
                 }
 
@@ -343,8 +358,22 @@ fun CalculatorScreen(
             backdrop = backdrop,
             contentColor = contentColor,
             glassSurface = glassSurface,
-            dimColor = if (darkTheme) Color(0xFF121212).copy(alpha = 0.45f) else Color(0xFF29293A).copy(alpha = 0.22f),
+            dimColor = dimColor,
             mutedColor = mutedColor
+        )
+
+        ShuttlecockFeeSheet(
+            visible = showShuttlecockSheet,
+            onDismiss = { showShuttlecockSheet = false },
+            currentFee = badmintonFee,
+            onFeeChange = { badmintonFee = it },
+            onDetailModeChange = { shuttlecockDetailMode = it },
+            backdrop = backdrop,
+            contentColor = contentColor,
+            mutedColor = mutedColor,
+            glassSurface = glassSurface,
+            dimColor = dimColor,
+            accent = accent
         )
     }
 }

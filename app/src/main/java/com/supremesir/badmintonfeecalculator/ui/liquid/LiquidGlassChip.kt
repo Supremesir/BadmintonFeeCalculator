@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.drawBackdrop
@@ -55,12 +56,13 @@ fun LiquidGlassChip(
     textColor: Color,
     surfaceColor: Color,
     modifier: Modifier = Modifier,
+    minWidth: Dp = 72.dp,
     onClick: (() -> Unit)? = null
 ) {
     val isLightTheme = !isSystemInDarkTheme()
     Box(
         modifier
-            .widthIn(min = 72.dp)
+            .widthIn(min = minWidth)
             .drawBackdrop(
                 backdrop = backdrop,
                 shape = { RoundedCornerShape(12.dp) },

@@ -58,7 +58,8 @@ fun LiquidWheelPicker(
     visibleCount: Int = 5,
     itemHeight: Dp = 36.dp,
     wheelWidth: Dp = 44.dp,
-    surfaceColor: Color = Color.White.copy(alpha = 0.22f)
+    surfaceColor: Color = Color.White.copy(alpha = 0.22f),
+    liteGlass: Boolean = false
 ) {
     val paddingCount = visibleCount / 2
     val values = remember(range) { range.toList() }
@@ -72,7 +73,11 @@ fun LiquidWheelPicker(
     val itemHeightPx = with(density) { itemHeight.toPx() }
     val cameraDistancePx = with(density) { 52.dp.toPx() }
     val scrollGlow by animateFloatAsState(
-        targetValue = if (listState.isScrollInProgress) 1f else 0.42f,
+        targetValue = when {
+            liteGlass -> 0f
+            listState.isScrollInProgress -> 1f
+            else -> 0.42f
+        },
         animationSpec = spring(0.75f, 280f),
         label = "wheelScrollGlow"
     )
@@ -130,25 +135,35 @@ fun LiquidWheelPicker(
                     shape = { RoundedCornerShape(12.dp) },
                     effects = {
                         liquidColorControls(isLightTheme)
-                        blur((4f + 2f * scrollGlow).dp.toPx())
-                        lens(
-                            (8f + 8f * scrollGlow).dp.toPx(),
-                            (16f + 12f * scrollGlow).dp.toPx(),
-                            depthEffect = true,
-                            chromaticAberration = scrollGlow > 0.6f
-                        )
+                        if (liteGlass) {
+                            blur(4f.dp.toPx())
+                            lens(8f.dp.toPx(), 16f.dp.toPx())
+                        } else {
+                            blur((4f + 2f * scrollGlow).dp.toPx())
+                            lens(
+                                (8f + 8f * scrollGlow).dp.toPx(),
+                                (16f + 12f * scrollGlow).dp.toPx(),
+                                depthEffect = true,
+                                chromaticAberration = scrollGlow > 0.6f
+                            )
+                        }
                     },
                     highlight = {
-                        Highlight.Default.copy(alpha = 0.35f + 0.65f * scrollGlow)
+                        if (liteGlass) Highlight.Default.copy(alpha = 0.35f)
+                        else Highlight.Default.copy(alpha = 0.35f + 0.65f * scrollGlow)
                     },
                     shadow = {
-                        Shadow(alpha = 0.08f + 0.18f * scrollGlow)
+                        Shadow(alpha = if (liteGlass) 0.08f else 0.08f + 0.18f * scrollGlow)
                     },
                     innerShadow = {
-                        InnerShadow(
-                            radius = 3f.dp + 6f.dp * scrollGlow,
-                            alpha = 0.16f + 0.28f * scrollGlow
-                        )
+                        if (liteGlass) {
+                            InnerShadow(radius = 3f.dp, alpha = 0.16f)
+                        } else {
+                            InnerShadow(
+                                radius = 3f.dp + 6f.dp * scrollGlow,
+                                alpha = 0.16f + 0.28f * scrollGlow
+                            )
+                        }
                     },
                     onDrawSurface = { drawRect(surfaceColor) }
                 )

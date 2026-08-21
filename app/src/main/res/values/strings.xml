@@ -15,4 +15,10 @@
     <string name="man">Man</string>
     <string name="woman">Woman</string>
     <string name="absent">absentee</string>
+    <string name="shuttlecock_detail_title">By tube</string>
+    <string name="shuttlecock_per_tube">12 shuttlecocks per tube</string>
+    <string name="shuttlecock_tube_price">Tube price</string>
+    <string name="shuttlecock_used_count">Used</string>
+    <string name="shuttlecock_add_line">Add a tube type</string>
+    <string name="shuttlecock_exit_detail">Edit total instead</string>
 </resources>

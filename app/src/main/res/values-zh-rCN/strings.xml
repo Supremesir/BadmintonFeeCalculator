@@ -15,4 +15,10 @@
     <string name="man">男</string>
     <string name="woman">女</string>
     <string name="absent">鸽子</string>
+    <string name="shuttlecock_detail_title">按桶计算</string>
+    <string name="shuttlecock_per_tube">一桶 12 颗</string>
+    <string name="shuttlecock_tube_price">桶价</string>
+    <string name="shuttlecock_used_count">颗数</string>
+    <string name="shuttlecock_add_line">添加一种球</string>
+    <string name="shuttlecock_exit_detail">改回总价</string>
 </resources>

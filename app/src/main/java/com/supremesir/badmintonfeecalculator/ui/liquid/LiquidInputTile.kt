@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -38,6 +39,7 @@ import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -61,11 +63,15 @@ fun LiquidInputTile(
     surfaceColor: Color,
     accent: Color,
     modifier: Modifier = Modifier,
-    keyboardType: KeyboardType = KeyboardType.Decimal
+    keyboardType: KeyboardType = KeyboardType.Decimal,
+    readOnly: Boolean = false,
+    onReadOnlyClick: (() -> Unit)? = null,
+    onAccessoryClick: (() -> Unit)? = null,
+    accessoryActive: Boolean = false
 ) {
     val focusRequester = remember { FocusRequester() }
     val isLightTheme = !isSystemInDarkTheme()
-    Column(
+    Box(
         modifier
             .drawBackdrop(
                 backdrop = backdrop,
@@ -79,48 +85,101 @@ fun LiquidInputTile(
                 innerShadow = { InnerShadow(radius = 6f.dp, alpha = 0.28f) },
                 onDrawSurface = { drawRect(surfaceColor) }
             )
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = LocalIndication.current
-            ) { focusRequester.requestFocus() }
-            .padding(horizontal = 8.dp, vertical = 14.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(
-            text = label.trimEnd('：', ':', ' '),
-            color = mutedColor,
-            style = LiquidType.caption,
-            maxLines = 2,
-            textAlign = TextAlign.Center
-        )
-        BasicTextField(
-            value = value,
-            onValueChange = onValueChange,
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 6.dp)
-                .focusRequester(focusRequester),
-            textStyle = LiquidType.number.copy(
-                color = textColor,
-                textAlign = TextAlign.Center
-            ),
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-            cursorBrush = SolidColor(accent),
-            decorationBox = { innerTextField ->
-                Box(contentAlignment = Alignment.Center) {
-                    if (value.isEmpty()) {
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = LocalIndication.current
+                ) {
+                    if (readOnly) onReadOnlyClick?.invoke() else focusRequester.requestFocus()
+                }
+                .padding(horizontal = 8.dp, vertical = 14.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = label.trimEnd('：', ':', ' '),
+                    modifier = Modifier.padding(horizontal = if (onAccessoryClick != null) 30.dp else 0.dp),
+                    color = mutedColor,
+                    style = LiquidType.caption,
+                    maxLines = 2,
+                    textAlign = TextAlign.Center
+                )
+                if (onAccessoryClick != null) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .size(width = 28.dp, height = 22.dp)
+                            .drawBackdrop(
+                                backdrop = backdrop,
+                                shape = { RoundedCornerShape(50) },
+                                effects = {
+                                    liquidColorControls(isLightTheme)
+                                    blur(2f.dp.toPx())
+                                    lens(6f.dp.toPx(), 12f.dp.toPx())
+                                },
+                                onDrawSurface = {
+                                    drawRect(
+                                        if (accessoryActive) {
+                                            accent.copy(alpha = 0.42f)
+                                        } else {
+                                            surfaceColor
+                                        }
+                                    )
+                                }
+                            )
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = LocalIndication.current,
+                                role = Role.Button,
+                                onClick = onAccessoryClick
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
                         Text(
-                            text = "0",
-                            color = mutedColor.copy(alpha = 0.45f),
-                            style = LiquidType.number,
-                            textAlign = TextAlign.Center
+                            text = if (accessoryActive) "桶" else "+",
+                            color = if (accessoryActive) Color.White else textColor,
+                            style = LiquidType.caption
                         )
                     }
-                    innerTextField()
                 }
             }
-        )
+            BasicTextField(
+                value = value,
+                onValueChange = onValueChange,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 6.dp)
+                    .focusRequester(focusRequester),
+                enabled = !readOnly,
+                readOnly = readOnly,
+                textStyle = LiquidType.number.copy(
+                    color = textColor,
+                    textAlign = TextAlign.Center
+                ),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+                cursorBrush = SolidColor(accent),
+                decorationBox = { innerTextField ->
+                    Box(contentAlignment = Alignment.Center) {
+                        if (value.isEmpty()) {
+                            Text(
+                                text = "0",
+                                color = mutedColor.copy(alpha = 0.45f),
+                                style = LiquidType.number,
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                        innerTextField()
+                    }
+                }
+            )
+        }
     }
 }
 
