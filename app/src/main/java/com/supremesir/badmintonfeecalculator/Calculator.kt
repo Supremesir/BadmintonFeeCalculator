@@ -44,6 +44,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowSizeClass
 import com.kyant.backdrop.Backdrop
@@ -300,18 +302,22 @@ fun CalculatorScreen(
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 LiquidButton(
                     onClick = { showDialog.value = true },
                     backdrop = backdrop,
-                    modifier = Modifier.weight(1.28f),
-                    surfaceColor = glassSurface
+                    modifier = Modifier.semantics {
+                        contentDescription = resources.getString(R.string.other_fee_label)
+                    },
+                    surfaceColor = glassSurface,
+                    circle = true
                 ) {
                     Text(
-                        text = resources.getString(R.string.other_fee_label),
+                        text = resources.getString(R.string.currency_symbol),
                         color = contentColor,
-                        style = LiquidType.body
+                        style = LiquidType.number
                     )
                 }
                 LiquidButton(
@@ -331,19 +337,14 @@ fun CalculatorScreen(
                         }
                     },
                     backdrop = backdrop,
-                    modifier = Modifier.weight(0.88f),
-                    tint = calculateTint
+                    tint = calculateTint,
+                    circle = true
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.calculation),
                         contentDescription = resources.getString(R.string.calculate),
-                        modifier = Modifier.size(22.dp),
+                        modifier = Modifier.size(34.dp),
                         tint = Color.White
-                    )
-                    Text(
-                        text = resources.getString(R.string.calculate),
-                        color = Color.White,
-                        style = LiquidType.body
                     )
                 }
             }

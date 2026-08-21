@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
@@ -46,6 +48,8 @@ fun LiquidButton(
     modifier: Modifier = Modifier,
     tint: Color = Color.Unspecified,
     surfaceColor: Color = Color.Unspecified,
+    circle: Boolean = false,
+    fillWidth: Boolean = true,
     content: @Composable RowScope.() -> Unit
 ) {
     val animationScope = rememberCoroutineScope()
@@ -60,7 +64,7 @@ fun LiquidButton(
             modifier
                 .drawBackdrop(
                 backdrop = backdrop,
-                shape = { RoundedCornerShape(50) },
+                shape = { if (circle) CircleShape else RoundedCornerShape(50) },
                 effects = {
                     val progress = interactiveHighlight.pressProgress
                     liquidColorControls(isLightTheme)
@@ -125,9 +129,18 @@ fun LiquidButton(
             )
             .then(interactiveHighlight.modifier)
             .then(interactiveHighlight.gestureModifier)
-            .height(48.dp)
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
+            .then(
+                when {
+                    circle -> Modifier.size(60.dp)
+                    fillWidth -> Modifier
+                        .height(48.dp)
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                    else -> Modifier
+                        .height(48.dp)
+                        .padding(horizontal = 14.dp)
+                }
+            ),
         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
         content = content
