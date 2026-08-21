@@ -272,7 +272,7 @@ fun CalculatorScreen(
                 LiquidButton(
                     onClick = { showDialog.value = true },
                     backdrop = backdrop,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1.28f),
                     surfaceColor = glassSurface
                 ) {
                     Text(
@@ -296,7 +296,7 @@ fun CalculatorScreen(
                         }
                     },
                     backdrop = backdrop,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(0.88f),
                     tint = accent
                 ) {
                     Icon(
@@ -502,10 +502,7 @@ private fun WheelField(
     labelColor: Color,
     surfaceColor: Color
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
         LiquidWheelPicker(
             value = value,
             range = 0..10,
@@ -516,8 +513,9 @@ private fun WheelField(
         )
         Text(
             text = label,
+            modifier = Modifier.padding(top = 6.dp),
             color = labelColor,
-            fontSize = 16.sp,
+            fontSize = 13.sp,
             maxLines = 1,
             softWrap = false
         )
