@@ -30,12 +30,10 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.lerp
 import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.drawBackdrop
@@ -44,6 +42,7 @@ import com.kyant.backdrop.effects.lens
 import com.kyant.backdrop.highlight.Highlight
 import com.kyant.backdrop.shadow.InnerShadow
 import com.kyant.backdrop.shadow.Shadow
+import com.supremesir.badmintonfeecalculator.ui.theme.LiquidType
 import kotlin.math.abs
 import kotlinx.coroutines.flow.distinctUntilChanged
 import androidx.compose.ui.graphics.Shadow as TextShadow
@@ -195,14 +194,13 @@ fun LiquidWheelPicker(
                             text = number.toString(),
                             modifier = Modifier.fillMaxWidth(),
                             color = textColor,
-                            fontSize = 22.sp,
-                            fontWeight = when {
-                                centerWeight > 0.72f -> FontWeight.Bold
-                                centerWeight > 0.32f -> FontWeight.SemiBold
-                                else -> FontWeight.Normal
-                            },
-                            textAlign = TextAlign.Center,
-                            style = TextStyle(
+                            style = LiquidType.wheel.copy(
+                                fontWeight = when {
+                                    centerWeight > 0.72f -> FontWeight.Bold
+                                    centerWeight > 0.32f -> FontWeight.SemiBold
+                                    else -> FontWeight.Normal
+                                },
+                                textAlign = TextAlign.Center,
                                 shadow = TextShadow(
                                     color = Color.White.copy(alpha = 0.42f * centerWeight),
                                     offset = Offset.Zero,

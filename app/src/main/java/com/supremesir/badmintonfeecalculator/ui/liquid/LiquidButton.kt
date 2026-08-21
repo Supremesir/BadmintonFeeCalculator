@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -30,6 +32,7 @@ import com.kyant.backdrop.effects.lens
 import com.kyant.backdrop.highlight.Highlight
 import com.kyant.backdrop.shadow.InnerShadow
 import com.kyant.backdrop.shadow.Shadow
+import com.supremesir.badmintonfeecalculator.ui.theme.LiquidType
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -52,9 +55,10 @@ fun LiquidButton(
         InteractiveHighlight(animationScope = animationScope)
     }
 
-    Row(
-        modifier
-            .drawBackdrop(
+    CompositionLocalProvider(LocalTextStyle provides LiquidType.body) {
+        Row(
+            modifier
+                .drawBackdrop(
                 backdrop = backdrop,
                 shape = { RoundedCornerShape(50) },
                 effects = {
@@ -127,5 +131,6 @@ fun LiquidButton(
         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
         content = content
-    )
+        )
+    }
 }

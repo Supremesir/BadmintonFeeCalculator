@@ -38,19 +38,17 @@ import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.drawBackdrop
 import com.kyant.backdrop.effects.blur
 import com.kyant.backdrop.effects.lens
 import com.kyant.backdrop.highlight.Highlight
 import com.kyant.backdrop.shadow.InnerShadow
+import com.supremesir.badmintonfeecalculator.ui.theme.LiquidType
 
 @Composable
 fun LiquidInputTile(
@@ -91,7 +89,7 @@ fun LiquidInputTile(
         Text(
             text = label.trimEnd('：', ':', ' '),
             color = mutedColor,
-            fontSize = 12.sp,
+            style = LiquidType.caption,
             maxLines = 2,
             textAlign = TextAlign.Center
         )
@@ -102,10 +100,8 @@ fun LiquidInputTile(
                 .fillMaxWidth()
                 .padding(top = 6.dp)
                 .focusRequester(focusRequester),
-            textStyle = TextStyle(
+            textStyle = LiquidType.number.copy(
                 color = textColor,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.SemiBold,
                 textAlign = TextAlign.Center
             ),
             singleLine = true,
@@ -117,8 +113,8 @@ fun LiquidInputTile(
                         Text(
                             text = "0",
                             color = mutedColor.copy(alpha = 0.45f),
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.SemiBold
+                            style = LiquidType.number,
+                            textAlign = TextAlign.Center
                         )
                     }
                     innerTextField()
@@ -203,7 +199,7 @@ fun LiquidTapToEditRow(
                 .weight(1f)
                 .padding(end = 12.dp),
             color = mutedColor,
-            fontSize = 16.sp,
+            style = LiquidType.body,
             maxLines = 1
         )
         if (editing) {
@@ -231,10 +227,8 @@ fun LiquidTapToEditRow(
                             finishEditing()
                         }
                     },
-                textStyle = TextStyle(
+                textStyle = LiquidType.chip.copy(
                     color = textColor,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.SemiBold,
                     textAlign = TextAlign.Center
                 ),
                 singleLine = true,

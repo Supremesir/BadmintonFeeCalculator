@@ -15,13 +15,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.drawBackdrop
 import com.kyant.backdrop.effects.blur
 import com.kyant.backdrop.effects.lens
+import com.supremesir.badmintonfeecalculator.ui.theme.LiquidType
 
 @Composable
 fun LiquidInsetGroup(
@@ -85,8 +84,7 @@ fun LiquidGlassChip(
         Text(
             text = text,
             color = textColor,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.SemiBold
+            style = LiquidType.chip
         )
     }
 }

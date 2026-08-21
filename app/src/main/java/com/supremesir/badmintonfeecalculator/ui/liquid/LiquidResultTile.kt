@@ -15,9 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.util.fastCoerceAtMost
 import androidx.compose.ui.util.lerp
 import com.kyant.backdrop.Backdrop
@@ -27,6 +25,7 @@ import com.kyant.backdrop.effects.lens
 import com.kyant.backdrop.highlight.Highlight
 import com.kyant.backdrop.shadow.InnerShadow
 import com.kyant.backdrop.shadow.Shadow
+import com.supremesir.badmintonfeecalculator.ui.theme.LiquidType
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -117,13 +116,12 @@ fun LiquidResultTile(
         Text(
             text = label,
             color = mutedColor,
-            fontSize = 13.sp
+            style = LiquidType.caption
         )
         Text(
             text = "$value",
             color = textColor,
-            fontSize = 26.sp,
-            fontWeight = FontWeight.SemiBold
+            style = LiquidType.number
         )
     }
 }

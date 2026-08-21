@@ -44,9 +44,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.window.core.layout.WindowSizeClass
 import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.backdrops.layerBackdrop
@@ -60,6 +58,7 @@ import com.supremesir.badmintonfeecalculator.ui.liquid.LiquidInsetGroup
 import com.supremesir.badmintonfeecalculator.ui.liquid.LiquidResultTile
 import com.supremesir.badmintonfeecalculator.ui.liquid.LiquidTapToEditRow
 import com.supremesir.badmintonfeecalculator.ui.liquid.LiquidWheelPicker
+import com.supremesir.badmintonfeecalculator.ui.theme.LiquidType
 import kotlinx.coroutines.delay
 
 @Composable
@@ -84,7 +83,7 @@ fun CalculatorScreen(
     val resources = context.resources
     val darkTheme = isSystemInDarkTheme()
     val contentColor = if (darkTheme) Color.White else Color(0xFF1B1B1F)
-    val mutedColor = contentColor.copy(alpha = 0.62f)
+    val mutedColor = contentColor.copy(alpha = 0.72f)
     val glassSurface = if (darkTheme) Color.White.copy(alpha = 0.10f) else Color.White.copy(alpha = 0.12f)
     val accent = Color(0xFF0088FF)
     val staleAccent = Color(0xFFFF3B30)
@@ -148,8 +147,7 @@ fun CalculatorScreen(
                 text = resources.getString(R.string.app_name),
                 modifier = Modifier.padding(top = 16.dp, bottom = 16.dp),
                 color = contentColor,
-                fontSize = 28.sp,
-                fontWeight = FontWeight.Medium
+                style = LiquidType.title
             )
 
             Column(
@@ -297,7 +295,8 @@ fun CalculatorScreen(
                 ) {
                     Text(
                         text = resources.getString(R.string.other_fee_label),
-                        color = contentColor
+                        color = contentColor,
+                        style = LiquidType.body
                     )
                 }
                 LiquidButton(
@@ -328,7 +327,8 @@ fun CalculatorScreen(
                     )
                     Text(
                         text = resources.getString(R.string.calculate),
-                        color = Color.White
+                        color = Color.White,
+                        style = LiquidType.body
                     )
                 }
             }
@@ -343,7 +343,8 @@ fun CalculatorScreen(
             backdrop = backdrop,
             contentColor = contentColor,
             glassSurface = glassSurface,
-            dimColor = if (darkTheme) Color(0xFF121212).copy(alpha = 0.45f) else Color(0xFF29293A).copy(alpha = 0.22f)
+            dimColor = if (darkTheme) Color(0xFF121212).copy(alpha = 0.45f) else Color(0xFF29293A).copy(alpha = 0.22f),
+            mutedColor = mutedColor
         )
     }
 }
@@ -357,7 +358,8 @@ fun ShowBottomSheetDialog(
     backdrop: Backdrop,
     contentColor: Color,
     glassSurface: Color,
-    dimColor: Color
+    dimColor: Color,
+    mutedColor: Color = contentColor.copy(alpha = 0.72f)
 ) {
     var malePicker by remember { mutableIntStateOf(3) }
     var femalePicker by remember { mutableIntStateOf(0) }
@@ -373,7 +375,7 @@ fun ShowBottomSheetDialog(
         dimColor = dimColor,
         handleColor = contentColor.copy(alpha = 0.28f)
     ) {
-        val mutedLabel = contentColor.copy(alpha = 0.62f)
+        val mutedLabel = mutedColor
         Column(
             modifier = Modifier
                 .verticalScroll(rememberScrollState())
@@ -406,7 +408,7 @@ fun ShowBottomSheetDialog(
                             ),
                             modifier = Modifier.weight(1F),
                             color = mutedLabel,
-                            fontSize = 16.sp
+                            style = LiquidType.body
                         )
                         LiquidGlassChip(
                             text = "$fee",
@@ -507,7 +509,7 @@ private fun CountWheel(
             text = label,
             modifier = Modifier.padding(top = 6.dp),
             color = labelColor,
-            fontSize = 13.sp,
+            style = LiquidType.caption,
             maxLines = 1,
             softWrap = false
         )
@@ -537,7 +539,7 @@ private fun WheelField(
             text = label,
             modifier = Modifier.padding(top = 6.dp),
             color = labelColor,
-            fontSize = 13.sp,
+            style = LiquidType.caption,
             maxLines = 1,
             softWrap = false
         )
