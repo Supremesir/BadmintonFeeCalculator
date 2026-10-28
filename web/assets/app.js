@@ -20,6 +20,7 @@ import {
 } from './core.js';
 import { createWheel } from './wheel.js';
 import { getLang, setLang, t } from './i18n.js';
+import { bindGlobalHaptics, haptic } from './haptics.js';
 
 /* -------------------------------------------------------------------------- */
 /* 元素引用                                                                    */
@@ -321,6 +322,7 @@ function renderComboBody() {
       visible: 3,
       label: labelText,
       onChange: (v) => {
+        if (state[key] !== v) haptic('light');
         state[key] = v;
         updateCustomFee();
       },
@@ -777,9 +779,35 @@ function syncDockHeight() {
 }
 
 function syncViewport() {
+  const doc = document.documentElement;
+  const layout = Math.round(doc.clientHeight || window.innerHeight);
   const vv = window.visualViewport;
-  if (!vv) return;
-  document.documentElement.style.setProperty('--app-height', `${Math.round(vv.height)}px`);
+  const visible = vv ? Math.round(vv.height) : layout;
+  // 键盘弹出：可视高度会明显小于布局高度，这时骨架要跟着缩，否则按钮区被顶出屏幕
+  const keyboardOpen = visible < layout * 0.75;
+
+  const standalone =
+    window.navigator.standalone === true ||
+    window.matchMedia('(display-mode: standalone)').matches;
+
+  let height;
+  if (standalone) {
+    // 主屏运行时没有浏览器工具栏，可视区比布局区短出来的那一截就是底部
+    // home indicator。骨架按整屏算，那一条交给 dock 的 safe-area padding。
+    height = Math.max(visible, layout);
+    // 兜底：独立运行时布局视口仍比屏幕矮一点（正好是 home indicator），补到屏幕高。
+    // 限制差值 ≤120px，避免 iPad 分屏窗口被撑出可视区。
+    if (window.screen?.height > height && window.screen.height - height <= 120) {
+      height = Math.round(window.screen.height);
+    }
+  } else {
+    // 浏览器里底部工具栏会实实在在挡住内容，跟可视区走（和改造前一致）
+    height = visible;
+  }
+
+  if (keyboardOpen) height = visible;
+
+  doc.style.setProperty('--app-height', `${height}px`);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -832,10 +860,12 @@ syncViewport();
 syncDockHeight();
 if ('ResizeObserver' in window) new ResizeObserver(syncDockHeight).observe(dock);
 setupInstallHint();
+bindGlobalHaptics();
 registerServiceWorker();
 
 window.visualViewport?.addEventListener('resize', syncViewport);
 window.visualViewport?.addEventListener('scroll', syncViewport);
+window.addEventListener('resize', syncViewport);
 window.addEventListener('orientationchange', () => setTimeout(syncViewport, 120));
 
 // 首屏滚轮需要等布局稳定后再校正一次

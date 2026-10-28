@@ -147,6 +147,29 @@ node web/tools/make-icons.mjs    # 改完 Android 图标后重跑一次
 改了 `assets/app.css` 里的 `--bg-top / --bg-bottom` 之后记得重跑一次，
 脚本里的取色常量要跟着改（在文件顶部的 `THEMES`）。
 
+## 触感反馈
+
+Android 原版只有滚轮换挡时给一次 `TextHandleMove` 触感，这里扩到了所有可点元素：
+按钮、结果卡片、费用行按下给轻反馈，`=` 计算给中反馈，滚轮每换一格给一次轻反馈。
+
+- Android / 桌面 Chromium 走 `navigator.vibrate()`。
+- **iOS 没有 Vibration API**。唯一的门路是借 `<input type="checkbox" switch>`
+  的原生开关——用户点它会触发系统触感，代码里用 `label.click()` 代点
+  （见 `assets/haptics.js`）。iOS 17.4 起才有 switch 外观，更老的版本会退化成
+  静默勾选：不震，也没有副作用。
+- 所以 iOS 上的触感是"蹭"来的，不等于 Taptic Engine，某些状态下系统会吃掉这次反馈。
+  所有调用都是尽力而为，功能不依赖它。
+
+## 主屏独立运行的高度
+
+`.app` 的高度不用 `100vh`，由 JS 算好写进 `--app-height`：
+
+- 主屏运行时没有浏览器工具栏，`visualViewport.height` 比整屏矮的那一截就是底部
+  home indicator，直接拿它当高度会让页面短一截、底部露色带、浮层位置也跟着偏。
+  所以独立模式按整屏算，那一条交给 dock 的 `env(safe-area-inset-bottom)`。
+- 浏览器里（有工具栏）仍然跟 `visualViewport` 走，工具栏收起/展开都不会挡住内容。
+- 键盘弹出时两边都缩到可视高度，保证按钮区不被顶出屏幕。
+
 ## 与 Android 版的一致性
 
 计算逻辑（含 `Math.ceil(x*10)/10` 的向上取整、`Math.round` 的四舍五入、除以 0 时

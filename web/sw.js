@@ -8,7 +8,7 @@
  * 改了源码后把 VERSION 加一，旧缓存会在 activate 时被清掉。
  */
 
-const VERSION = 'v3';
+const VERSION = 'v4';
 const CACHE = `bfc-${VERSION}`;
 
 const PRECACHE = [
@@ -20,6 +20,7 @@ const PRECACHE = [
   './assets/core.js',
   './assets/wheel.js',
   './assets/i18n.js',
+  './assets/haptics.js',
 ];
 
 self.addEventListener('install', (event) => {

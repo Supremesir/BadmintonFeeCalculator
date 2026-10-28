@@ -131,6 +131,23 @@ button {
   cursor: pointer;
 }
 
+/* iOS 触感：蹭 <input switch> 的原生开关反馈（见 assets/haptics.js）。
+   必须留在渲染树里，display:none / visibility:hidden 就不会有反馈了 */
+.haptic-switch {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  opacity: 0.01;
+  pointer-events: none;
+  z-index: -1;
+  /* 不要覆盖 appearance：原生开关的渲染本身就是触感的来源 */
+}
+
 /* 组件大量使用 display:flex，需要让 hidden 属性始终生效 */
 [hidden] {
   display: none !important;
