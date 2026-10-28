@@ -48,7 +48,9 @@ if (!browser) {
 
 /** CSS 像素尺寸 + 像素比 —— 必须和 media query 完全一致，iOS 才认得出 */
 const DEVICES = [
-  { cw: 393, ch: 852, dpr: 3, note: 'iPhone 15/15 Pro/14 Pro/16' },
+  { cw: 402, ch: 874, dpr: 3, note: 'iPhone 16 Pro' },
+  { cw: 440, ch: 956, dpr: 3, note: 'iPhone 16 Pro Max' },
+  { cw: 393, ch: 852, dpr: 3, note: 'iPhone 15/15 Pro/14 Pro' },
   { cw: 390, ch: 844, dpr: 3, note: 'iPhone 12/13/14' },
   { cw: 430, ch: 932, dpr: 3, note: 'iPhone 14/15 Pro Max、15 Plus' },
   { cw: 428, ch: 926, dpr: 3, note: 'iPhone 12/13 Pro Max' },

@@ -8,7 +8,7 @@
  * 改了源码后把 VERSION 加一，旧缓存会在 activate 时被清掉。
  */
 
-const VERSION = 'v4';
+const VERSION = 'v5';
 const CACHE = `bfc-${VERSION}`;
 
 const PRECACHE = [
@@ -60,19 +60,16 @@ async function updateCache(request, response) {
 }
 
 async function handleNavigate(request) {
+  // network-first：HTML 只有十几 KB，直接走网络，保证"发布后下次打开就是新版"。
+  // 之前是 cache-first，用户要开两次才能拿到新版本，正是底部空白那次问题的观感。
   const cached = (await fromCache(request)) || (await fromCache('./index.html'));
-  const network = fetch(request, { cache: 'no-cache' })
-    .then((response) => {
-      updateCache('./index.html', response);
-      return response;
-    })
-    .catch(() => undefined);
-
-  if (cached) {
-    network.catch(() => undefined);
-    return cached;
+  try {
+    const response = await fetch(request, { cache: 'no-cache' });
+    if (response && response.ok) updateCache('./index.html', response);
+    return response;
+  } catch {
+    return cached || Response.error();
   }
-  return (await network) || Response.error();
 }
 
 async function staleWhileRevalidate(request) {

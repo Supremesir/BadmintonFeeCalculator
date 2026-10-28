@@ -783,31 +783,17 @@ function syncViewport() {
   const layout = Math.round(doc.clientHeight || window.innerHeight);
   const vv = window.visualViewport;
   const visible = vv ? Math.round(vv.height) : layout;
-  // 键盘弹出：可视高度会明显小于布局高度，这时骨架要跟着缩，否则按钮区被顶出屏幕
+
+  // 骨架本身用 position:fixed + inset:0 铺满 webview，不依赖任何"猜出来的高度"——
+  // iOS 主屏运行时 clientHeight / visualViewport.height / screen.height 三者对不上，
+  // 之前按它们算出来的高度会短一截，底部露出 body 背景（看起来像被什么挡住了）。
+  // 唯一需要干预的是键盘：可视高度明显变小时把骨架收到可视区，否则底部按钮被顶出屏幕。
   const keyboardOpen = visible < layout * 0.75;
-
-  const standalone =
-    window.navigator.standalone === true ||
-    window.matchMedia('(display-mode: standalone)').matches;
-
-  let height;
-  if (standalone) {
-    // 主屏运行时没有浏览器工具栏，可视区比布局区短出来的那一截就是底部
-    // home indicator。骨架按整屏算，那一条交给 dock 的 safe-area padding。
-    height = Math.max(visible, layout);
-    // 兜底：独立运行时布局视口仍比屏幕矮一点（正好是 home indicator），补到屏幕高。
-    // 限制差值 ≤120px，避免 iPad 分屏窗口被撑出可视区。
-    if (window.screen?.height > height && window.screen.height - height <= 120) {
-      height = Math.round(window.screen.height);
-    }
+  if (keyboardOpen) {
+    doc.style.setProperty('--app-height', `${visible}px`);
   } else {
-    // 浏览器里底部工具栏会实实在在挡住内容，跟可视区走（和改造前一致）
-    height = visible;
+    doc.style.removeProperty('--app-height');
   }
-
-  if (keyboardOpen) height = visible;
-
-  doc.style.setProperty('--app-height', `${height}px`);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -845,9 +831,17 @@ function registerServiceWorker() {
   const swUrl = new URL('../sw.js', import.meta.url);
   const scope = new URL('./', swUrl);
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register(swUrl, { scope: scope.pathname }).catch(() => {
-      /* 离线能力注册失败不影响主流程 */
-    });
+    navigator.serviceWorker
+      .register(swUrl, { scope: scope.pathname, updateViaCache: 'none' })
+      .then((registration) => {
+        // 从主屏切回来时顺手查一次更新，避免在旧版本里停留好几天
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') registration.update().catch(() => {});
+        });
+      })
+      .catch(() => {
+        /* 离线能力注册失败不影响主流程 */
+      });
   });
 }
 

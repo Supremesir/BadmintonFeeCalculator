@@ -222,10 +222,9 @@ button {
 
 .app {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: var(--app-height, 100dvh);
+  inset: 0;
+  /* 高度交给 inset 决定，手算的 --app-height 只在键盘弹出时才写入 */
+  height: var(--app-height, auto);
   z-index: 1;
   display: flex;
   flex-direction: column;
