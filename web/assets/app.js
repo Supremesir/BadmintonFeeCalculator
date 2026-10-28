@@ -72,6 +72,9 @@ const installHintOk = $('installHintOk');
 /* 状态 —— 字段命名尽量对应 Compose 版                                          */
 /* -------------------------------------------------------------------------- */
 
+/** 诊断面板里显示的版本，每次发布手动改一下 */
+const BUILD = 'v6 · 2026-10-28';
+
 const state = {
   courtFee: '',
   shuttlecockFee: '',
@@ -791,8 +794,120 @@ function syncViewport() {
   const keyboardOpen = visible < layout * 0.75;
   if (keyboardOpen) {
     doc.style.setProperty('--app-height', `${visible}px`);
-  } else {
-    doc.style.removeProperty('--app-height');
+    return;
+  }
+
+  // 键盘没弹：先把高度交还给 inset:0（铺满 layout viewport）。
+  doc.style.removeProperty('--app-height');
+
+  // 还有一种情况 inset:0 治不了：主屏运行时 layout viewport 比真实屏幕矮
+  // （个别 iOS 版本把底部 home indicator 那条排除在 clientHeight 之外），
+  // 这时骨架停在那条上沿，下面露出 body 背景。用 screen.height 补上。
+  // 限制差值 ≤120px，避免 iPad 分屏窗口被撑出可视区。
+  const standalone =
+    window.navigator.standalone === true ||
+    window.matchMedia('(display-mode: standalone)').matches;
+  const screenH = Math.round(window.screen?.height ?? 0);
+  if (standalone && screenH > layout && screenH - layout <= 120) {
+    doc.style.setProperty('--app-height', `${screenH}px`);
+  }
+}
+
+
+/* -------------------------------------------------------------------------- */
+/* 诊断面板：长按标题 0.8s，或 ?diag=1                                          */
+/* 主屏独立运行时用户没法清缓存，这个面板用来确认"跑的是不是最新版"、           */
+/* 看 iOS 到底报了哪些视口数值，并一键强制更新。                                */
+/* -------------------------------------------------------------------------- */
+
+function closeDiagnostics() {
+  document.querySelector('.diag')?.remove();
+}
+
+async function openDiagnostics() {
+  if (document.querySelector('.diag')) return;
+
+  const cacheNames = 'caches' in window ? await caches.keys().catch(() => []) : [];
+  const registration = navigator.serviceWorker?.controller ? '有' : '无';
+  const standalone =
+    window.navigator.standalone === true ||
+    window.matchMedia('(display-mode: standalone)').matches;
+
+  const lines = [
+    `版本      ${BUILD}`,
+    `独立运行  ${standalone ? '是' : '否'}`,
+    `SW 控制   ${registration}`,
+    `缓存      ${cacheNames.join(', ') || '（无）'}`,
+    '',
+    `innerWH   ${window.innerWidth} × ${window.innerHeight}`,
+    `clientWH  ${document.documentElement.clientWidth} × ${document.documentElement.clientHeight}`,
+    `screenWH  ${window.screen?.width} × ${window.screen?.height}`,
+    `visualVP  ${window.visualViewport ? Math.round(window.visualViewport.width) + ' × ' + Math.round(window.visualViewport.height) : '（无）'}`,
+    `DPR       ${window.devicePixelRatio}`,
+    `--app-h   ${document.documentElement.style.getPropertyValue('--app-height') || '（未设置）'}`,
+    `骨架底边  ${Math.round(document.querySelector('.app').getBoundingClientRect().bottom)}`,
+  ];
+
+  const root = document.createElement('div');
+  root.className = 'diag';
+  root.innerHTML = `
+    <div class="diag__card" role="dialog" aria-modal="true" aria-label="诊断信息">
+      <h2 class="diag__title">诊断信息</h2>
+      <pre class="diag__body"></pre>
+      <div class="diag__actions">
+        <button class="diag__btn" type="button" data-act="buzz">测试震动</button>
+        <button class="diag__btn" type="button" data-act="close">关闭</button>
+        <button class="diag__btn diag__btn--primary" type="button" data-act="reset">清缓存并重启</button>
+      </div>
+    </div>`;
+  root.querySelector('.diag__body').textContent = lines.join(String.fromCharCode(10));
+
+  root.addEventListener('click', async (event) => {
+    const button = event.target.closest('[data-act]');
+    if (!button) {
+      if (event.target === root) closeDiagnostics();
+      return;
+    }
+    const act = button.dataset.act;
+    if (act === 'close') {
+      closeDiagnostics();
+    } else if (act === 'buzz') {
+      button.textContent = typeof navigator.vibrate === 'function'
+        ? 'vibrate 可用，已触发'
+        : '无 vibrate，走 switch';
+      haptic('heavy');
+      document.querySelector('label.haptic-switch')?.click();
+    } else if (act === 'reset') {
+      button.textContent = '清理中…';
+      try {
+        const regs = await navigator.serviceWorker?.getRegistrations?.() ?? [];
+        await Promise.all(regs.map((r) => r.unregister()));
+        await Promise.all((await caches.keys()).map((k) => caches.delete(k)));
+      } catch {
+        /* 清理失败也照样 reload，至少能拿一次网络版 */
+      }
+      location.reload();
+    }
+  });
+
+  document.body.append(root);
+}
+
+function setupDiagnostics() {
+  if (new URLSearchParams(location.search).has('diag')) {
+    openDiagnostics();
+    return;
+  }
+  const title = document.querySelector('.topbar__title');
+  if (!title) return;
+  let timer = 0;
+  const cancel = () => clearTimeout(timer);
+  title.addEventListener('pointerdown', () => {
+    cancel();
+    timer = setTimeout(openDiagnostics, 800);
+  });
+  for (const type of ['pointerup', 'pointerleave', 'pointercancel', 'pointermove']) {
+    title.addEventListener(type, cancel);
   }
 }
 
@@ -826,6 +941,16 @@ function setupInstallHint() {
 function registerServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
   if (location.protocol === 'file:') return;
+
+  // 新版本接管后自动刷一次，避免"发布了我这儿还是旧的"；
+  // 首次安装时页面本来就没有 controller，不刷。
+  const hadController = Boolean(navigator.serviceWorker.controller);
+  let reloaded = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!hadController || reloaded) return;
+    reloaded = true;
+    location.reload();
+  });
   // GitHub Pages 会部署到 /<repo>/ 子路径，scope 必须按 sw.js 所在目录推导，
   // 不能写成 '../'（那会解析到站点根目录而被浏览器拒绝）。
   const swUrl = new URL('../sw.js', import.meta.url);
@@ -854,6 +979,7 @@ syncViewport();
 syncDockHeight();
 if ('ResizeObserver' in window) new ResizeObserver(syncDockHeight).observe(dock);
 setupInstallHint();
+setupDiagnostics();
 bindGlobalHaptics();
 registerServiceWorker();
 

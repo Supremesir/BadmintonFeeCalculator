@@ -1044,3 +1044,74 @@ button {
     scroll-behavior: auto !important;
   }
 }
+
+/* -------------------------------------------------------------------------- */
+/* 诊断面板                                                                    */
+/* -------------------------------------------------------------------------- */
+
+.diag {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(6, 10, 16, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.diag__card {
+  width: 100%;
+  max-width: 420px;
+  max-height: 80vh;
+  overflow: auto;
+  padding: 18px 18px 14px;
+  border-radius: var(--radius-group);
+  border: 1px solid var(--glass-border);
+  background: var(--sheet);
+  color: var(--text);
+  -webkit-backdrop-filter: blur(28px);
+  backdrop-filter: blur(28px);
+}
+
+.diag__title {
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.diag__body {
+  margin: 0 0 16px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--text-muted);
+}
+
+.diag__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.diag__btn {
+  flex: 1 1 30%;
+  padding: 11px 12px;
+  border-radius: var(--radius-chip);
+  border: 1px solid var(--glass-border);
+  background: var(--glass);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.diag__btn--primary {
+  flex-basis: 100%;
+  background: var(--accent);
+  border-color: transparent;
+  color: #fff;
+}
