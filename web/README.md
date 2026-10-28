@@ -17,9 +17,9 @@ web/
 │   ├── i18n.js                # 中英文案
 │   ├── app.js                 # 状态与交互（对应 CalculatorScreen）
 │   └── app.css                # 液态玻璃视觉
-├── icons/                     # 图标（SVG 源 + 各尺寸 PNG）
+├── icons/                     # 图标（由 Android 的 Play Store 图标生成）
 ├── splash/                    # iOS 启动图（9 种机型 × 浅/深两套）
-├── tools/make-icons.mjs       # 由 SVG 重新生成图标 PNG
+├── tools/make-icons.mjs       # 从 Android 图标母版重新生成各尺寸图标
 ├── tools/make-splash.mjs      # 重新生成启动图，并回写 index.html 的 <link>
 └── tests/                     # 数值一致性测试
 ```
@@ -106,7 +106,7 @@ iOS 没有安装弹窗，需要手动添加：
 
 > 注意：必须用 **Safari** 添加。Chrome for iOS 的“添加到主屏幕”只会建一个普通书签。
 
-启动时会先显示 `splash/` 里对应机型、对应配色的启动图（图标居中 + 同色底），
+启动时会先显示 `splash/` 里对应机型、对应配色的启动图（App 图标居中 + 同色底），
 然后淡入界面，不会出现一帧白屏/黑屏。没有启动图的机型（比如 iPad、横屏）会退回
 iOS 默认的纯色启动帧，功能不受影响。
 
@@ -119,6 +119,29 @@ iOS 默认的纯色启动帧，功能不受影响。
 
 ```bash
 node web/tools/make-splash.mjs   # 重新生成 + 自动回写 index.html 的 link 块
+```
+
+启动图里的图标用的是 `icons/icon-maskable-512.webp`（四周留白的版本），
+套上圆角卡片后不会把金币边缘切掉。
+
+### 图标
+
+图标不是另画的，直接以 Android 工程的
+`app/src/main/new_ic_launcher-playstore.png`（512×512，金币 + 羽毛球那枚）为母版生成，
+所以两边完全同款：
+
+| 产物 | 用途 | 说明 |
+| --- | --- | --- |
+| `icon-180.png` | iOS 主屏 | PNG 兼容性最好，iOS 自己裁 squircle |
+| `icon-192.webp` / `icon-512.webp` | manifest | WebP 只有 PNG 的五分之一 |
+| `icon-maskable-512.webp` | Android/Chrome | 图案收进 80% 安全区 |
+| `favicon.png` | 标签页 | 64×64 |
+
+母版里金币几乎顶到画布边缘，直接塞进 iOS 的 squircle 遮罩会把币缘切掉，
+所以生成时统一留了 10% 白边（也更接近 Android adaptive icon 的观感）。
+
+```bash
+node web/tools/make-icons.mjs    # 改完 Android 图标后重跑一次
 ```
 
 改了 `assets/app.css` 里的 `--bg-top / --bg-bottom` 之后记得重跑一次，

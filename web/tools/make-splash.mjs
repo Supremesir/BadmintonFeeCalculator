@@ -127,12 +127,13 @@ async function connect() {
 
 /* -------------------------------------------------------------------------- */
 
-const svgUrl = pathToFileURL(join(iconsDir, 'icon.svg')).href;
+// 用 maskable 版：金币四周留了 10% 白边，套上圆角后不会把币缘裁掉
+const iconUrl = `data:image/webp;base64,${readFileSync(join(iconsDir, 'icon-maskable-512.webp')).toString('base64')}`;
 
 function splashHtml(width, height, theme) {
-  // 图标按 22% 宽度绘制；icon.svg 本身是方形的（主屏图标由 iOS 自己裁圆角），
+  // 图标按 22% 宽度绘制；素材是方形的（主屏图标由 iOS 自己裁圆角），
   // 这里按 iOS 图标的观感补上约 22.5% 的圆角
-  const iconSize = Math.round(width * 0.22);
+  const iconSize = Math.round(width * 0.28);
   return `<!doctype html><html><head><meta charset="utf-8"><style>
     html, body { margin: 0; padding: 0; width: 100%; height: 100%; }
     body {
@@ -145,7 +146,7 @@ function splashHtml(width, height, theme) {
       border-radius: ${Math.round(iconSize * 0.225)}px;
       filter: drop-shadow(0 ${Math.round(width * 0.018)}px ${Math.round(width * 0.045)}px rgba(23, 42, 66, 0.26));
     }
-  </style></head><body><img src="${svgUrl}" alt=""></body></html>`;
+  </style></head><body><img src="${iconUrl}" alt=""></body></html>`;
 }
 
 const results = [];
