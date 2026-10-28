@@ -1115,3 +1115,28 @@ button {
   border-color: transparent;
   color: #fff;
 }
+
+/* 诊断探针：洋红贴内容顶端、青色贴内容底端，用来判断内容有没有被系统裁剪 */
+.diag-probes {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 75;
+}
+
+.diag-probe {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 8px;
+}
+
+.diag-probe--top {
+  top: 0;
+  background: #ff00ff;
+}
+
+.diag-probe--bottom {
+  bottom: 0;
+  background: #00ffff;
+}

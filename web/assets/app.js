@@ -73,7 +73,7 @@ const installHintOk = $('installHintOk');
 /* -------------------------------------------------------------------------- */
 
 /** 诊断面板里显示的版本，每次发布手动改一下 */
-const BUILD = 'v6 · 2026-10-28';
+const BUILD = 'v7 · 2026-10-28';
 
 const state = {
   courtFee: '',
@@ -797,20 +797,22 @@ function syncViewport() {
     return;
   }
 
-  // 键盘没弹：先把高度交还给 inset:0（铺满 layout viewport）。
+  // 键盘没弹：高度交还给 inset:0，骨架正好铺满可视区。
   doc.style.removeProperty('--app-height');
 
-  // 还有一种情况 inset:0 治不了：主屏运行时 layout viewport 比真实屏幕矮
-  // （个别 iOS 版本把底部 home indicator 那条排除在 clientHeight 之外），
-  // 这时骨架停在那条上沿，下面露出 body 背景。用 screen.height 补上。
-  // 限制差值 ≤120px，避免 iPad 分屏窗口被撑出可视区。
   const standalone =
     window.navigator.standalone === true ||
     window.matchMedia('(display-mode: standalone)').matches;
   const screenH = Math.round(window.screen?.height ?? 0);
-  if (standalone && screenH > layout && screenH - layout <= 120) {
-    doc.style.setProperty('--app-height', `${screenH}px`);
-  }
+  const deadBottom = screenH - layout;
+
+  // 主屏运行时可视区可能比屏幕矮一条（实测 874-812=62），那一条页面里的元素够不着，
+  // 只有 canvas 背景能填色。所以：
+  //   1) 骨架高度保持 = 可视区（让渐变的收尾正好落在裁剪线上，接上底部的同色）
+  //   2) dock 不再额外留 safe-area，否则和那条重复留白，按钮会被顶高一截
+  // 这条差值先只做观测，不据此改 padding —— 免得在"实际上能画到底"的机型上
+  // 把 dock 的 safe-area 拿掉，按钮压到 home indicator 上。
+  doc.style.setProperty('--dead-bottom', `${standalone ? deadBottom : 0}px`);
 }
 
 
@@ -822,6 +824,7 @@ function syncViewport() {
 
 function closeDiagnostics() {
   document.querySelector('.diag')?.remove();
+  document.querySelector('.diag-probes')?.remove();
 }
 
 async function openDiagnostics() {
@@ -832,6 +835,19 @@ async function openDiagnostics() {
   const standalone =
     window.navigator.standalone === true ||
     window.matchMedia('(display-mode: standalone)').matches;
+
+  // 用真实元素量 env() 的解析值：iOS 上 safe-area-inset-top 是不是 0 决定内容
+  // 有没有压在状态栏下面
+  const measureInset = (prop) => {
+    const probe = document.createElement('div');
+    probe.style.cssText = `position:fixed;top:0;left:0;width:0;height:env(${prop})`;
+    document.body.append(probe);
+    const value = Math.round(probe.getBoundingClientRect().height);
+    probe.remove();
+    return value;
+  };
+  const insetTop = measureInset('safe-area-inset-top');
+  const insetBottom = measureInset('safe-area-inset-bottom');
 
   const lines = [
     `版本      ${BUILD}`,
@@ -846,6 +862,11 @@ async function openDiagnostics() {
     `DPR       ${window.devicePixelRatio}`,
     `--app-h   ${document.documentElement.style.getPropertyValue('--app-height') || '（未设置）'}`,
     `骨架底边  ${Math.round(document.querySelector('.app').getBoundingClientRect().bottom)}`,
+    `安全区    上 ${insetTop} / 下 ${insetBottom}`,
+    `屏幕差    screenH − clientH = ${Math.round((window.screen?.height ?? 0) - document.documentElement.clientHeight)}`,
+    `--dead-b  ${document.documentElement.style.getPropertyValue('--dead-bottom') || '（未设置）'}`,
+    `洋红条    = 内容顶端（top:0）`,
+    `青色条    = 内容底端（bottom:0）`,
   ];
 
   const root = document.createElement('div');
@@ -890,7 +911,14 @@ async function openDiagnostics() {
     }
   });
 
-  document.body.append(root);
+  // 两条探针：洋红贴着可视区顶，青色贴着可视区底。它们同时出现在截图里的位置，
+  // 就能判断内容有没有被裁剪、以及裁在哪。
+  const probes = document.createElement('div');
+  probes.className = 'diag-probes';
+  probes.innerHTML =
+    '<div class="diag-probe diag-probe--top"></div><div class="diag-probe diag-probe--bottom"></div>';
+
+  document.body.append(root, probes);
 }
 
 function setupDiagnostics() {
