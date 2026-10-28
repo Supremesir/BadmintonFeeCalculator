@@ -20,7 +20,6 @@ import {
 } from './core.js';
 import { createWheel } from './wheel.js';
 import { getLang, setLang, t } from './i18n.js';
-import { bindGlobalHaptics, haptic } from './haptics.js';
 
 /* -------------------------------------------------------------------------- */
 /* 元素引用                                                                    */
@@ -68,12 +67,41 @@ const toastEl = $('toast');
 const installHint = $('installHint');
 const installHintOk = $('installHintOk');
 
+
+/* -------------------------------------------------------------------------- */
+/* 触感                                                                        */
+/* -------------------------------------------------------------------------- */
+
+// 标准振动 API。iOS 的 Safari / 主屏应用都没有实现它（也没有任何替代接口），
+// 所以那边静默无效果——这是平台能力限制，不是这里能补救的。
+const canVibrate = typeof navigator.vibrate === 'function';
+
+function haptic(ms = 8) {
+  if (!canVibrate) return;
+  try {
+    navigator.vibrate(ms);
+  } catch {
+    /* 忽略 */
+  }
+}
+
+// 事件委托：所有按钮/可点区域按下时都给一下，指针是鼠标时不触发（桌面端不需要）
+document.addEventListener(
+  'pointerdown',
+  (event) => {
+    if (event.pointerType === 'mouse') return;
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    const el = target.closest('[data-haptic], button, a[href], [role="button"], .row, .tile');
+    if (!el) return;
+    haptic(el.dataset.haptic === 'medium' ? 14 : 8);
+  },
+  { passive: true },
+);
+
 /* -------------------------------------------------------------------------- */
 /* 状态 —— 字段命名尽量对应 Compose 版                                          */
 /* -------------------------------------------------------------------------- */
-
-/** 诊断面板里显示的版本，每次发布手动改一下 */
-const BUILD = 'v8 · 2026-10-28';
 
 const state = {
   courtFee: '',
@@ -325,7 +353,7 @@ function renderComboBody() {
       visible: 3,
       label: labelText,
       onChange: (v) => {
-        if (state[key] !== v) haptic('light');
+        if (state[key] !== v) haptic();
         state[key] = v;
         updateCustomFee();
       },
@@ -781,16 +809,6 @@ function syncDockHeight() {
   document.documentElement.style.setProperty('--dock-h', `${dock.offsetHeight}px`);
 }
 
-/** 把 env(safe-area-inset-*) 解析成像素值 */
-function envPx(prop) {
-  const probe = document.createElement('div');
-  probe.style.cssText = `position:fixed;top:0;left:0;width:0;height:env(${prop})`;
-  document.body.append(probe);
-  const value = Math.round(probe.getBoundingClientRect().height);
-  probe.remove();
-  return value;
-}
-
 function syncViewport() {
   const doc = document.documentElement;
   const layout = Math.round(doc.clientHeight || window.innerHeight);
@@ -809,146 +827,6 @@ function syncViewport() {
 
   // 键盘没弹：高度交还给 inset:0，骨架正好铺满可视区。
   doc.style.removeProperty('--app-height');
-
-  const standalone =
-    window.navigator.standalone === true ||
-    window.matchMedia('(display-mode: standalone)').matches;
-  const screenH = Math.round(window.screen?.height ?? 0);
-  const deadBottom = screenH - layout;
-
-  // 主屏运行时可视区可能比屏幕矮一条（实测 874-812=62），那一条页面里的元素够不着，
-  // 只有 canvas 背景能填色。所以：
-  //   1) 骨架高度保持 = 可视区（让渐变的收尾正好落在裁剪线上，接上底部的同色）
-  //   2) dock 不再额外留 safe-area，否则和那条重复留白，按钮会被顶高一截
-  // 判断"底部死区"是否真的存在：
-  //   内容压在状态栏下面（上安全区 > 0），且 可视高 + 上安全区 ≈ 屏幕高
-  //   → 说明视口是从屏幕顶端算的，底部那一条被系统占掉了，页面画不过去。
-  // 这时 dock 不能再额外留 safe-area，否则会重复留白，按钮被顶高一截。
-  const insetTop = standalone ? envPx('safe-area-inset-top') : 0;
-  const underStatusBar = insetTop > 0 && layout + insetTop >= screenH - 8;
-  const dead = underStatusBar ? Math.max(0, deadBottom) : 0;
-
-  doc.style.setProperty('--dead-bottom', `${dead}px`);
-  doc.style.setProperty(
-    '--safe-bottom',
-    dead > 30 ? '0px' : 'env(safe-area-inset-bottom)'
-  );
-}
-
-
-/* -------------------------------------------------------------------------- */
-/* 诊断面板：长按标题 0.8s，或 ?diag=1                                          */
-/* 主屏独立运行时用户没法清缓存，这个面板用来确认"跑的是不是最新版"、           */
-/* 看 iOS 到底报了哪些视口数值，并一键强制更新。                                */
-/* -------------------------------------------------------------------------- */
-
-function closeDiagnostics() {
-  document.querySelector('.diag')?.remove();
-  document.querySelector('.diag-probes')?.remove();
-}
-
-async function openDiagnostics() {
-  if (document.querySelector('.diag')) return;
-
-  const cacheNames = 'caches' in window ? await caches.keys().catch(() => []) : [];
-  const registration = navigator.serviceWorker?.controller ? '有' : '无';
-  const standalone =
-    window.navigator.standalone === true ||
-    window.matchMedia('(display-mode: standalone)').matches;
-
-  // env() 的解析值：iOS 上 safe-area-inset-top 是不是 0，决定内容有没有压在状态栏下面
-  const insetTop = envPx('safe-area-inset-top');
-  const insetBottom = envPx('safe-area-inset-bottom');
-
-  const lines = [
-    `版本      ${BUILD}`,
-    `独立运行  ${standalone ? '是' : '否'}`,
-    `SW 控制   ${registration}`,
-    `缓存      ${cacheNames.join(', ') || '（无）'}`,
-    '',
-    `innerWH   ${window.innerWidth} × ${window.innerHeight}`,
-    `clientWH  ${document.documentElement.clientWidth} × ${document.documentElement.clientHeight}`,
-    `screenWH  ${window.screen?.width} × ${window.screen?.height}`,
-    `visualVP  ${window.visualViewport ? Math.round(window.visualViewport.width) + ' × ' + Math.round(window.visualViewport.height) : '（无）'}`,
-    `DPR       ${window.devicePixelRatio}`,
-    `--app-h   ${document.documentElement.style.getPropertyValue('--app-height') || '（未设置）'}`,
-    `骨架底边  ${Math.round(document.querySelector('.app').getBoundingClientRect().bottom)}`,
-    `安全区    上 ${insetTop} / 下 ${insetBottom}`,
-    `屏幕差    screenH − clientH = ${Math.round((window.screen?.height ?? 0) - document.documentElement.clientHeight)}`,
-    `--dead-b  ${document.documentElement.style.getPropertyValue('--dead-bottom') || '（未设置）'}`,
-    `--safe-b  ${document.documentElement.style.getPropertyValue('--safe-bottom') || '（未设置）'}`,
-    `洋红条    = 内容顶端（top:0）`,
-    `青色条    = 内容底端（bottom:0）`,
-  ];
-
-  const root = document.createElement('div');
-  root.className = 'diag';
-  root.innerHTML = `
-    <div class="diag__card" role="dialog" aria-modal="true" aria-label="诊断信息">
-      <h2 class="diag__title">诊断信息</h2>
-      <pre class="diag__body"></pre>
-      <div class="diag__actions">
-        <button class="diag__btn" type="button" data-act="buzz">测试震动</button>
-        <button class="diag__btn" type="button" data-act="close">关闭</button>
-        <button class="diag__btn diag__btn--primary" type="button" data-act="reset">清缓存并重启</button>
-      </div>
-    </div>`;
-  root.querySelector('.diag__body').textContent = lines.join(String.fromCharCode(10));
-
-  root.addEventListener('click', async (event) => {
-    const button = event.target.closest('[data-act]');
-    if (!button) {
-      if (event.target === root) closeDiagnostics();
-      return;
-    }
-    const act = button.dataset.act;
-    if (act === 'close') {
-      closeDiagnostics();
-    } else if (act === 'buzz') {
-      button.textContent = typeof navigator.vibrate === 'function'
-        ? 'vibrate 可用，已触发'
-        : '无 vibrate，走 switch';
-      haptic('heavy');
-      document.querySelector('label.haptic-switch')?.click();
-    } else if (act === 'reset') {
-      button.textContent = '清理中…';
-      try {
-        const regs = await navigator.serviceWorker?.getRegistrations?.() ?? [];
-        await Promise.all(regs.map((r) => r.unregister()));
-        await Promise.all((await caches.keys()).map((k) => caches.delete(k)));
-      } catch {
-        /* 清理失败也照样 reload，至少能拿一次网络版 */
-      }
-      location.reload();
-    }
-  });
-
-  // 两条探针：洋红贴着可视区顶，青色贴着可视区底。它们同时出现在截图里的位置，
-  // 就能判断内容有没有被裁剪、以及裁在哪。
-  const probes = document.createElement('div');
-  probes.className = 'diag-probes';
-  probes.innerHTML =
-    '<div class="diag-probe diag-probe--top"></div><div class="diag-probe diag-probe--bottom"></div>';
-
-  document.body.append(root, probes);
-}
-
-function setupDiagnostics() {
-  if (new URLSearchParams(location.search).has('diag')) {
-    openDiagnostics();
-    return;
-  }
-  const title = document.querySelector('.topbar__title');
-  if (!title) return;
-  let timer = 0;
-  const cancel = () => clearTimeout(timer);
-  title.addEventListener('pointerdown', () => {
-    cancel();
-    timer = setTimeout(openDiagnostics, 800);
-  });
-  for (const type of ['pointerup', 'pointerleave', 'pointercancel', 'pointermove']) {
-    title.addEventListener(type, cancel);
-  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -982,15 +860,6 @@ function registerServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
   if (location.protocol === 'file:') return;
 
-  // 新版本接管后自动刷一次，避免"发布了我这儿还是旧的"；
-  // 首次安装时页面本来就没有 controller，不刷。
-  const hadController = Boolean(navigator.serviceWorker.controller);
-  let reloaded = false;
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (!hadController || reloaded) return;
-    reloaded = true;
-    location.reload();
-  });
   // GitHub Pages 会部署到 /<repo>/ 子路径，scope 必须按 sw.js 所在目录推导，
   // 不能写成 '../'（那会解析到站点根目录而被浏览器拒绝）。
   const swUrl = new URL('../sw.js', import.meta.url);
@@ -1019,8 +888,6 @@ syncViewport();
 syncDockHeight();
 if ('ResizeObserver' in window) new ResizeObserver(syncDockHeight).observe(dock);
 setupInstallHint();
-setupDiagnostics();
-bindGlobalHaptics();
 registerServiceWorker();
 
 window.visualViewport?.addEventListener('resize', syncViewport);

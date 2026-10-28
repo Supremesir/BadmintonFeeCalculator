@@ -131,23 +131,6 @@ button {
   cursor: pointer;
 }
 
-/* iOS 触感：蹭 <input switch> 的原生开关反馈（见 assets/haptics.js）。
-   必须留在渲染树里，display:none / visibility:hidden 就不会有反馈了 */
-.haptic-switch {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 1px;
-  height: 1px;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  opacity: 0.01;
-  pointer-events: none;
-  z-index: -1;
-  /* 不要覆盖 appearance：原生开关的渲染本身就是触感的来源 */
-}
-
 /* 组件大量使用 display:flex，需要让 hidden 属性始终生效 */
 [hidden] {
   display: none !important;
@@ -168,20 +151,6 @@ button {
   z-index: 0;
   overflow: hidden;
   background: linear-gradient(to bottom, var(--bg-top), var(--bg-bottom));
-}
-
-.atmosphere::before {
-  /* 可视区之外（主屏运行时底部常有一条 60px 左右的死区）只能由 canvas 填色，
-     而 canvas 用的是 --bg-bottom。这里让氛围层在底部收敛到同一个颜色，
-     否则渐变末尾和死区之间会出现一条肉眼可见的硬边（实测差 4 个色阶）。 */
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 72px;
-  background: linear-gradient(to bottom, transparent, var(--bg-bottom));
-  pointer-events: none;
 }
 
 .atmosphere::after {
@@ -529,7 +498,7 @@ button {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 8px 20px calc(14px + var(--safe-bottom, env(safe-area-inset-bottom)));
+  padding: 8px 20px calc(14px + env(safe-area-inset-bottom));
 }
 
 .results {
@@ -667,7 +636,7 @@ button {
   -webkit-backdrop-filter: blur(26px) saturate(180%);
   backdrop-filter: blur(26px) saturate(180%);
   box-shadow: 0 -16px 40px -24px var(--glass-shadow);
-  padding-bottom: var(--safe-bottom, env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
   transform: translate3d(0, 101%, 0);
   transition: transform 0.42s cubic-bezier(0.32, 0.72, 0, 1);
   will-change: transform;
@@ -696,7 +665,7 @@ button {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
-  padding: 6px 18px calc(16px + var(--safe-bottom, env(safe-area-inset-bottom)));
+  padding: 6px 18px calc(16px + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -1057,98 +1026,4 @@ button {
     animation-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-}
-
-/* -------------------------------------------------------------------------- */
-/* 诊断面板                                                                    */
-/* -------------------------------------------------------------------------- */
-
-.diag {
-  position: fixed;
-  inset: 0;
-  z-index: 70;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  background: rgba(6, 10, 16, 0.72);
-}
-
-.diag__card {
-  width: 100%;
-  max-width: 420px;
-  max-height: 80vh;
-  overflow: auto;
-  padding: 18px 18px 14px;
-  border-radius: var(--radius-group);
-  border: 1px solid var(--glass-border);
-  background: var(--sheet);
-  color: var(--text);
-  -webkit-backdrop-filter: blur(28px);
-  backdrop-filter: blur(28px);
-}
-
-.diag__title {
-  margin: 0 0 12px;
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.diag__body {
-  margin: 0 0 16px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 12px;
-  line-height: 1.6;
-  white-space: pre-wrap;
-  word-break: break-word;
-  color: var(--text-muted);
-}
-
-.diag__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.diag__btn {
-  flex: 1 1 30%;
-  padding: 11px 12px;
-  border-radius: var(--radius-chip);
-  border: 1px solid var(--glass-border);
-  background: var(--glass);
-  color: var(--text);
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.diag__btn--primary {
-  flex-basis: 100%;
-  background: var(--accent);
-  border-color: transparent;
-  color: #fff;
-}
-
-/* 诊断探针：洋红贴内容顶端、青色贴内容底端，用来判断内容有没有被系统裁剪 */
-.diag-probes {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 75;
-}
-
-.diag-probe {
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 8px;
-}
-
-.diag-probe--top {
-  top: 0;
-  background: #ff00ff;
-}
-
-.diag-probe--bottom {
-  bottom: 0;
-  background: #00ffff;
 }
