@@ -73,7 +73,7 @@ const installHintOk = $('installHintOk');
 /* -------------------------------------------------------------------------- */
 
 /** 诊断面板里显示的版本，每次发布手动改一下 */
-const BUILD = 'v7 · 2026-10-28';
+const BUILD = 'v8 · 2026-10-28';
 
 const state = {
   courtFee: '',
@@ -781,6 +781,16 @@ function syncDockHeight() {
   document.documentElement.style.setProperty('--dock-h', `${dock.offsetHeight}px`);
 }
 
+/** 把 env(safe-area-inset-*) 解析成像素值 */
+function envPx(prop) {
+  const probe = document.createElement('div');
+  probe.style.cssText = `position:fixed;top:0;left:0;width:0;height:env(${prop})`;
+  document.body.append(probe);
+  const value = Math.round(probe.getBoundingClientRect().height);
+  probe.remove();
+  return value;
+}
+
 function syncViewport() {
   const doc = document.documentElement;
   const layout = Math.round(doc.clientHeight || window.innerHeight);
@@ -810,9 +820,19 @@ function syncViewport() {
   // 只有 canvas 背景能填色。所以：
   //   1) 骨架高度保持 = 可视区（让渐变的收尾正好落在裁剪线上，接上底部的同色）
   //   2) dock 不再额外留 safe-area，否则和那条重复留白，按钮会被顶高一截
-  // 这条差值先只做观测，不据此改 padding —— 免得在"实际上能画到底"的机型上
-  // 把 dock 的 safe-area 拿掉，按钮压到 home indicator 上。
-  doc.style.setProperty('--dead-bottom', `${standalone ? deadBottom : 0}px`);
+  // 判断"底部死区"是否真的存在：
+  //   内容压在状态栏下面（上安全区 > 0），且 可视高 + 上安全区 ≈ 屏幕高
+  //   → 说明视口是从屏幕顶端算的，底部那一条被系统占掉了，页面画不过去。
+  // 这时 dock 不能再额外留 safe-area，否则会重复留白，按钮被顶高一截。
+  const insetTop = standalone ? envPx('safe-area-inset-top') : 0;
+  const underStatusBar = insetTop > 0 && layout + insetTop >= screenH - 8;
+  const dead = underStatusBar ? Math.max(0, deadBottom) : 0;
+
+  doc.style.setProperty('--dead-bottom', `${dead}px`);
+  doc.style.setProperty(
+    '--safe-bottom',
+    dead > 30 ? '0px' : 'env(safe-area-inset-bottom)'
+  );
 }
 
 
@@ -836,18 +856,9 @@ async function openDiagnostics() {
     window.navigator.standalone === true ||
     window.matchMedia('(display-mode: standalone)').matches;
 
-  // 用真实元素量 env() 的解析值：iOS 上 safe-area-inset-top 是不是 0 决定内容
-  // 有没有压在状态栏下面
-  const measureInset = (prop) => {
-    const probe = document.createElement('div');
-    probe.style.cssText = `position:fixed;top:0;left:0;width:0;height:env(${prop})`;
-    document.body.append(probe);
-    const value = Math.round(probe.getBoundingClientRect().height);
-    probe.remove();
-    return value;
-  };
-  const insetTop = measureInset('safe-area-inset-top');
-  const insetBottom = measureInset('safe-area-inset-bottom');
+  // env() 的解析值：iOS 上 safe-area-inset-top 是不是 0，决定内容有没有压在状态栏下面
+  const insetTop = envPx('safe-area-inset-top');
+  const insetBottom = envPx('safe-area-inset-bottom');
 
   const lines = [
     `版本      ${BUILD}`,
@@ -865,6 +876,7 @@ async function openDiagnostics() {
     `安全区    上 ${insetTop} / 下 ${insetBottom}`,
     `屏幕差    screenH − clientH = ${Math.round((window.screen?.height ?? 0) - document.documentElement.clientHeight)}`,
     `--dead-b  ${document.documentElement.style.getPropertyValue('--dead-bottom') || '（未设置）'}`,
+    `--safe-b  ${document.documentElement.style.getPropertyValue('--safe-bottom') || '（未设置）'}`,
     `洋红条    = 内容顶端（top:0）`,
     `青色条    = 内容底端（bottom:0）`,
   ];

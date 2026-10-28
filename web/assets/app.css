@@ -170,6 +170,20 @@ button {
   background: linear-gradient(to bottom, var(--bg-top), var(--bg-bottom));
 }
 
+.atmosphere::before {
+  /* 可视区之外（主屏运行时底部常有一条 60px 左右的死区）只能由 canvas 填色，
+     而 canvas 用的是 --bg-bottom。这里让氛围层在底部收敛到同一个颜色，
+     否则渐变末尾和死区之间会出现一条肉眼可见的硬边（实测差 4 个色阶）。 */
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 72px;
+  background: linear-gradient(to bottom, transparent, var(--bg-bottom));
+  pointer-events: none;
+}
+
 .atmosphere::after {
   content: "";
   position: absolute;
@@ -515,7 +529,7 @@ button {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 8px 20px calc(14px + env(safe-area-inset-bottom));
+  padding: 8px 20px calc(14px + var(--safe-bottom, env(safe-area-inset-bottom)));
 }
 
 .results {
@@ -653,7 +667,7 @@ button {
   -webkit-backdrop-filter: blur(26px) saturate(180%);
   backdrop-filter: blur(26px) saturate(180%);
   box-shadow: 0 -16px 40px -24px var(--glass-shadow);
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: var(--safe-bottom, env(safe-area-inset-bottom));
   transform: translate3d(0, 101%, 0);
   transition: transform 0.42s cubic-bezier(0.32, 0.72, 0, 1);
   will-change: transform;
@@ -682,7 +696,7 @@ button {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
-  padding: 6px 18px calc(16px + env(safe-area-inset-bottom));
+  padding: 6px 18px calc(16px + var(--safe-bottom, env(safe-area-inset-bottom)));
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -1057,9 +1071,7 @@ button {
   align-items: center;
   justify-content: center;
   padding: 20px;
-  background: rgba(6, 10, 16, 0.5);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(6, 10, 16, 0.72);
 }
 
 .diag__card {
