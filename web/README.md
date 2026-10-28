@@ -18,7 +18,9 @@ web/
 │   ├── app.js                 # 状态与交互（对应 CalculatorScreen）
 │   └── app.css                # 液态玻璃视觉
 ├── icons/                     # 图标（SVG 源 + 各尺寸 PNG）
-├── tools/make-icons.mjs       # 由 SVG 重新生成 PNG
+├── splash/                    # iOS 启动图（9 种机型 × 浅/深两套）
+├── tools/make-icons.mjs       # 由 SVG 重新生成图标 PNG
+├── tools/make-splash.mjs      # 重新生成启动图，并回写 index.html 的 <link>
 └── tests/                     # 数值一致性测试
 ```
 
@@ -103,6 +105,24 @@ iOS 没有安装弹窗，需要手动添加：
 首次在 Safari 访问时页面会自动给出这个提示（可关闭，之后不再显示）。
 
 > 注意：必须用 **Safari** 添加。Chrome for iOS 的“添加到主屏幕”只会建一个普通书签。
+
+启动时会先显示 `splash/` 里对应机型、对应配色的启动图（图标居中 + 同色底），
+然后淡入界面，不会出现一帧白屏/黑屏。没有启动图的机型（比如 iPad、横屏）会退回
+iOS 默认的纯色启动帧，功能不受影响。
+
+### 启动图
+
+`index.html` 里那 18 个 `apple-touch-startup-image` 都是 `tools/make-splash.mjs`
+生成的，每个机型一对（浅色/深色），`media` 里的 `device-width / device-height /
+-webkit-device-pixel-ratio` 必须和图片像素尺寸严格对应，差一点 iOS 就认不出来、
+退回纯色启动帧。
+
+```bash
+node web/tools/make-splash.mjs   # 重新生成 + 自动回写 index.html 的 link 块
+```
+
+改了 `assets/app.css` 里的 `--bg-top / --bg-bottom` 之后记得重跑一次，
+脚本里的取色常量要跟着改（在文件顶部的 `THEMES`）。
 
 ## 与 Android 版的一致性
 
