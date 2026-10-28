@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="球费计算器">
+  <defs>
+    <linearGradient id="bg" x1="0.1" y1="0" x2="0.55" y2="1">
+      <stop offset="0" stop-color="#3AA0FF" />
+      <stop offset="1" stop-color="#0059C8" />
+    </linearGradient>
+    <mask id="f">
+      <rect width="64" height="64" fill="#fff" />
+      <g stroke="#000" stroke-width="1.15" stroke-linecap="round">
+        <line x1="29" y1="37.5" x2="22" y2="16.5" />
+        <line x1="30.75" y1="38" x2="27.75" y2="14.75" />
+        <line x1="32" y1="38.25" x2="32" y2="14" />
+        <line x1="33.25" y1="38" x2="36.25" y2="14.75" />
+        <line x1="35" y1="37.5" x2="42" y2="16.5" />
+      </g>
+    </mask>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#bg)" />
+  <g fill="#fff" mask="url(#f)">
+    <path d="M28.5 38 L20.75 17.5 Q32 13.5 43.25 17.5 L35.5 38 Z" />
+  </g>
+  <circle cx="32" cy="41.25" r="6.75" fill="#fff" />
+</svg>

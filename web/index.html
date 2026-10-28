@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content"
+    />
+    <title>球费计算器</title>
+    <meta name="description" content="羽毛球球费分摊计算器：场地费、羽毛球费按男女平摊，支持鸽子与按桶计价。" />
+
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#EAF1F7" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0D1117" />
+
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./icons/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./icons/icon-180.png" />
+
+    <!-- iOS 全屏（standalone）安装所需 -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="球费计算器" />
+    <meta name="format-detection" content="telephone=no" />
+
+    <link rel="stylesheet" href="./assets/app.css" />
+  </head>
+
+  <body>
+    <div class="atmosphere" aria-hidden="true">
+      <span class="slab slab--1"></span>
+      <span class="slab slab--2"></span>
+      <span class="slab slab--3"></span>
+    </div>
+
+    <div class="app" id="app">
+      <header class="topbar">
+        <h1 class="topbar__title" id="appTitle">球费计算器</h1>
+        <button class="lang-pill" id="langBtn" type="button" aria-label="Switch to English">EN</button>
+      </header>
+
+      <main class="content" id="content">
+        <div class="row-2">
+          <div class="tile input-tile">
+            <label class="tile__label" for="courtFee" id="courtFeeLabel">场地费</label>
+            <input
+              class="tile__input"
+              id="courtFee"
+              type="text"
+              inputmode="decimal"
+              autocomplete="off"
+              autocorrect="off"
+              spellcheck="false"
+              enterkeyhint="done"
+              placeholder="0"
+              aria-labelledby="courtFeeLabel"
+            />
+          </div>
+
+          <div class="tile input-tile input-tile--accessory">
+            <label class="tile__label" for="shuttleFee" id="shuttleFeeLabel">羽毛球费</label>
+            <button class="accessory" id="shuttleAccessory" type="button" aria-label="按桶计算">+</button>
+            <input
+              class="tile__input"
+              id="shuttleFee"
+              type="text"
+              inputmode="decimal"
+              autocomplete="off"
+              autocorrect="off"
+              spellcheck="false"
+              enterkeyhint="done"
+              placeholder="0"
+              aria-labelledby="shuttleFeeLabel"
+            />
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="edit-row" id="extraRow" role="button" tabindex="0">
+            <span class="edit-row__label" id="extraFeeLabel">男生多于女生费用</span>
+            <span class="edit-row__value" id="extraValue">5</span>
+            <input
+              class="edit-row__input"
+              id="extraInput"
+              type="text"
+              inputmode="decimal"
+              autocomplete="off"
+              enterkeyhint="done"
+              hidden
+              aria-labelledby="extraFeeLabel"
+            />
+          </div>
+        </div>
+
+        <div class="group group--wheels">
+          <div class="wheels">
+            <div class="wheel-col">
+              <div class="wheel-host" id="wheelMale"></div>
+              <span class="wheel-caption" id="manCaption">男</span>
+            </div>
+            <div class="wheel-col">
+              <div class="wheel-host" id="wheelFemale"></div>
+              <span class="wheel-caption" id="womanCaption">女</span>
+            </div>
+            <div class="wheel-col">
+              <div class="wheel-host" id="wheelAbsent"></div>
+              <span class="wheel-caption" id="absentCaption">鸽子</span>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <footer class="dock" id="dock">
+        <div class="install-hint" id="installHint" hidden>
+          <div class="install-hint__text">
+            <strong id="installHintTitle">添加到主屏幕</strong>
+            <span id="installHintBody"></span>
+          </div>
+          <button class="install-hint__ok" id="installHintOk" type="button">知道了</button>
+        </div>
+
+        <div class="results" id="results">
+          <button class="tile result-tile" id="resultMale" type="button">
+            <span class="result-tile__label" id="resultMaleLabel">男</span>
+            <span class="result-tile__value" id="maleValue">0</span>
+          </button>
+          <button class="tile result-tile" id="resultFemale" type="button">
+            <span class="result-tile__label" id="resultFemaleLabel">女</span>
+            <span class="result-tile__value" id="femaleValue">0</span>
+          </button>
+          <button class="tile result-tile" id="resultAbsent" type="button" hidden>
+            <span class="result-tile__label" id="resultAbsentLabel">鸽子</span>
+            <span class="result-tile__value" id="absentValue">0</span>
+          </button>
+        </div>
+
+        <div class="actions">
+          <button class="fab fab--sm" id="btnCombo" type="button" aria-label="组合金额">
+            <span class="fab__currency" id="currencyGlyph">￥</span>
+          </button>
+          <button class="fab fab--lg" id="btnCalc" type="button" aria-label="计算">
+            <svg class="fab__icon" viewBox="0 0 1024 1024" aria-hidden="true" focusable="false">
+              <path
+                d="M437,305h-38v-38c0,-19.9 -16.1,-36 -36,-36s-36,16.1 -36,36v38h-38c-19.9,0 -36,16.1 -36,36s16.1,36 36,36h38v38c0,19.9 16.1,36 36,36s36,-16.1 36,-36v-38h38c19.9,0 36,-16.1 36,-36s-16.1,-36 -36,-36zM592,377h148c19.9,0 36,-16.1 36,-36s-16.1,-36 -36,-36H592c-19.9,0 -36,16.1 -36,36s16.1,36 36,36zM740,570H592c-19.9,0 -36,16.1 -36,36s16.1,36 36,36h148c19.9,0 36,-16.1 36,-36s-16.1,-36 -36,-36zM740,670H592c-19.9,0 -36,16.1 -36,36s16.1,36 36,36h148c19.9,0 36,-16.1 36,-36s-16.1,-36 -36,-36zM441.3,578.2c-14.1,-14.1 -36.9,-14.1 -50.9,0l-26.9,26.9 -26.9,-26.9c-14.1,-14.1 -36.9,-14.1 -50.9,0 -14.1,14.1 -14.1,36.9 0,50.9l26.9,26.9 -26.9,26.9c-14.1,14.1 -14.1,36.9 0,50.9 7,7 16.2,10.5 25.5,10.5s18.4,-3.5 25.5,-10.5l26.9,-26.9 26.9,26.9c7,7 16.2,10.5 25.5,10.5 9.2,0 18.4,-3.5 25.5,-10.5 14.1,-14.1 14.1,-36.9 0,-50.9L414.4,656l26.9,-26.9c14,-14 14,-36.8 0,-50.9z"
+              />
+            </svg>
+          </button>
+        </div>
+      </footer>
+    </div>
+
+    <!-- 组合金额面板 -->
+    <div class="sheet" id="comboSheet" role="dialog" aria-modal="true" aria-hidden="true" aria-label="组合金额">
+      <div class="sheet__scrim" data-close></div>
+      <div class="sheet__panel">
+        <div class="sheet__handle"></div>
+        <div class="sheet__scroll" id="comboScroll"></div>
+      </div>
+    </div>
+
+    <!-- 按桶计算面板 -->
+    <div class="sheet" id="shuttleSheet" role="dialog" aria-modal="true" aria-hidden="true" aria-label="按桶计算">
+      <div class="sheet__scrim" data-close></div>
+      <div class="sheet__panel">
+        <div class="sheet__handle"></div>
+        <div class="sheet__scroll" id="shuttleScroll"></div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <noscript>
+      <div class="noscript">需要启用 JavaScript 才能使用球费计算器。</div>
+    </noscript>
+
+    <script type="module" src="./assets/app.js"></script>
+  </body>
+</html>

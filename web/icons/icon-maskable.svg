@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Badminton fee calculator">
+  <defs>
+    <linearGradient id="bg" x1="0.1" y1="0" x2="0.55" y2="1">
+      <stop offset="0" stop-color="#3AA0FF" />
+      <stop offset="0.5" stop-color="#0088FF" />
+      <stop offset="1" stop-color="#0059C8" />
+    </linearGradient>
+    <radialGradient id="glow" cx="0.26" cy="0.14" r="0.8">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.5" />
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0" />
+    </radialGradient>
+    <mask id="feathers">
+      <rect width="512" height="512" fill="#fff" />
+      <g stroke="#000" stroke-width="9" stroke-linecap="round">
+        <line x1="232" y1="300" x2="176" y2="132" />
+        <line x1="246" y1="304" x2="222" y2="118" />
+        <line x1="256" y1="306" x2="256" y2="112" />
+        <line x1="266" y1="304" x2="290" y2="118" />
+        <line x1="280" y1="300" x2="336" y2="132" />
+      </g>
+    </mask>
+  </defs>
+
+  <rect width="512" height="512" fill="url(#bg)" />
+  <rect width="512" height="512" fill="url(#glow)" />
+
+  <!-- maskable：主体缩到安全区（80%）内，四周留可被裁剪的底色 -->
+  <g transform="translate(256 256) scale(0.72) translate(-256 -256)">
+    <g fill="#FFFFFF" mask="url(#feathers)">
+      <path d="M228 306 L166 140 Q256 108 346 140 L284 306 Z" />
+    </g>
+    <circle cx="256" cy="330" r="54" fill="#FFFFFF" />
+  </g>
+</svg>

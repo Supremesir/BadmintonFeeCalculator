@@ -1,0 +1,35 @@
+{
+  "id": "./",
+  "name": "球费计算器",
+  "short_name": "球费",
+  "description": "羽毛球球费分摊计算器：场地费、羽毛球费按男女平摊，支持鸽子与按桶计价。",
+  "lang": "zh-CN",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#EAF1F7",
+  "theme_color": "#EAF1F7",
+  "categories": ["finance", "utilities", "sports"],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
